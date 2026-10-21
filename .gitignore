@@ -10,7 +10,6 @@ yarn-error.log
 
 # Misc.
 .DS_Store
-.react-router
 build
 dist
 node_modules
@@ -29,3 +28,9 @@ node_modules/
 *.ipr
 *.iws
 .idea/
+
+# TanStack Start / Nitro / Vercel
+.output
+.nitro
+.tanstack
+.vercel

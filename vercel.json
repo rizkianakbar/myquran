@@ -1,10 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": null,
+  "framework": "tanstack-start",
   "installCommand": "bun install --frozen-lockfile",
-  "buildCommand": "cd app && bun vite build",
-  "outputDirectory": "app/dist",
-  "rewrites": [{ "source": "/((?!quran/|assets/).*)", "destination": "/index.html" }],
   "headers": [
     {
       "source": "/quran/(.*)",

@@ -1,0 +1,243 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "47e213f9-893c-4331-bcbb-686325dabed8",
+  "prevIds": [
+    "4b0c7684-2d3b-4c81-b1a4-e48499c5a8c0"
+  ],
+  "footprints": [
+    {
+      "statementType": "rename_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "accounts"
+      ],
+      "writes": [
+        "s|tbl|public.accounts",
+        "n|tbl|public.accounts",
+        "n|rel|public.accounts",
+        "n|type|public.accounts",
+        "s|tbl|public.auth_accounts",
+        "n|tbl|public.auth_accounts",
+        "n|rel|public.auth_accounts",
+        "n|type|public.auth_accounts"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "rename_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "bookmarks"
+      ],
+      "writes": [
+        "s|tbl|public.bookmarks",
+        "n|tbl|public.bookmarks",
+        "n|rel|public.bookmarks",
+        "n|type|public.bookmarks",
+        "s|tbl|public.quran_bookmarks",
+        "n|tbl|public.quran_bookmarks",
+        "n|rel|public.quran_bookmarks",
+        "n|type|public.quran_bookmarks"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "rename_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "notes"
+      ],
+      "writes": [
+        "s|tbl|public.notes",
+        "n|tbl|public.notes",
+        "n|rel|public.notes",
+        "n|type|public.notes",
+        "s|tbl|public.quran_notes",
+        "n|tbl|public.quran_notes",
+        "n|rel|public.quran_notes",
+        "n|type|public.quran_notes"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "rename_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "sessions"
+      ],
+      "writes": [
+        "s|tbl|public.sessions",
+        "n|tbl|public.sessions",
+        "n|rel|public.sessions",
+        "n|type|public.sessions",
+        "s|tbl|public.auth_sessions",
+        "n|tbl|public.auth_sessions",
+        "n|rel|public.auth_sessions",
+        "n|type|public.auth_sessions"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "rename_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "users"
+      ],
+      "writes": [
+        "s|tbl|public.users",
+        "n|tbl|public.users",
+        "n|rel|public.users",
+        "n|type|public.users",
+        "s|tbl|public.auth_users",
+        "n|tbl|public.auth_users",
+        "n|rel|public.auth_users",
+        "n|type|public.auth_users"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "rename_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "verifications"
+      ],
+      "writes": [
+        "s|tbl|public.verifications",
+        "n|tbl|public.verifications",
+        "n|rel|public.verifications",
+        "n|type|public.verifications",
+        "s|tbl|public.auth_verifications",
+        "n|tbl|public.auth_verifications",
+        "n|rel|public.auth_verifications",
+        "n|type|public.auth_verifications"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "rename_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "quran_bookmarks",
+        "bookmarks_user_verse_idx"
+      ],
+      "writes": [
+        "s|idx|public.bookmarks_user_verse_idx",
+        "n|idx|public.bookmarks_user_verse_idx",
+        "n|rel|public.bookmarks_user_verse_idx",
+        "s|idx|public.quran_bookmarks_user_verse_idx",
+        "n|idx|public.quran_bookmarks_user_verse_idx",
+        "n|rel|public.quran_bookmarks_user_verse_idx"
+      ],
+      "reads": [
+        "e|tbl|public.quran_bookmarks",
+        "n|sch|public",
+        "e|col|public.quran_bookmarks.user_id",
+        "e|col|public.quran_bookmarks.surah",
+        "e|col|public.quran_bookmarks.verse"
+      ]
+    },
+    {
+      "statementType": "rename_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "quran_notes",
+        "notes_user_verse_idx"
+      ],
+      "writes": [
+        "s|idx|public.notes_user_verse_idx",
+        "n|idx|public.notes_user_verse_idx",
+        "n|rel|public.notes_user_verse_idx",
+        "s|idx|public.quran_notes_user_verse_idx",
+        "n|idx|public.quran_notes_user_verse_idx",
+        "n|rel|public.quran_notes_user_verse_idx"
+      ],
+      "reads": [
+        "e|tbl|public.quran_notes",
+        "n|sch|public",
+        "e|col|public.quran_notes.user_id",
+        "e|col|public.quran_notes.surah",
+        "e|col|public.quran_notes.verse"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "rename",
+      "key": "tables\u0000[\"public\",\"accounts\"]",
+      "set": {
+        "name": "auth_accounts"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "tables\u0000[\"public\",\"bookmarks\"]",
+      "set": {
+        "name": "quran_bookmarks"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "tables\u0000[\"public\",\"notes\"]",
+      "set": {
+        "name": "quran_notes"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "tables\u0000[\"public\",\"sessions\"]",
+      "set": {
+        "name": "auth_sessions"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "tables\u0000[\"public\",\"users\"]",
+      "set": {
+        "name": "auth_users"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "tables\u0000[\"public\",\"verifications\"]",
+      "set": {
+        "name": "auth_verifications"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "indexes\u0000[\"public\",\"bookmarks_user_verse_idx\"]",
+      "set": {
+        "name": "quran_bookmarks_user_verse_idx"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "indexes\u0000[\"public\",\"notes_user_verse_idx\"]",
+      "set": {
+        "name": "quran_notes_user_verse_idx"
+      }
+    }
+  ]
+}

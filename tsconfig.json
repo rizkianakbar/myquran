@@ -1,10 +1,21 @@
 {
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "lib": ["DOM", "DOM.Iterable", "ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "noFallthroughCasesInSwitch": true,
     "paths": {
-      "#api/*": ["./api/*"],
-      "#app/*": ["./app/*"],
-      "#assets/*": ["./assets/*"]
-    }
+      "#/*": ["./src/*"]
+    },
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2023",
+    "types": ["node", "vite/client"],
+    "verbatimModuleSyntax": true
   },
-  "include": []
+  "include": ["src", "scripts", "*.ts"]
 }

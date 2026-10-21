@@ -1,116 +1,78 @@
+# myQuran
+
+A calm Quran reader with word-by-word meanings, tafsir, recitation, and personal notes and bookmarks.
+
 ## Tech Stack
 
-- **Backend:** Express + tRPC + Drizzle ORM + PostgreSQL
-- **Frontend:** React + TanStack Router + tRPC Client
-- **Build:** TypeScript strict mode + Biome + Vitest
+- **Framework:** [TanStack Start](https://tanstack.com/start) (React 19, TanStack Router, server functions) on Vite + Nitro
+- **Data:** TanStack Query, Drizzle ORM, PostgreSQL
+- **Auth:** Better Auth (email + password)
+- **Tooling:** Bun, Biome, `tsgo`, Vitest
+- **Hosting:** Vercel
 
 ## Prerequisites
 
-- Node.js 24+
-- Docker (for PostgreSQL)
-- [mise](https://mise.jdx.dev/) (task runner)
+- Node.js 24+ and Bun 1.3+ (see `engines` / `packageManager` in `package.json`)
+- A [Supabase](https://supabase.com) project for development (Postgres 18+, since the schema uses `uuidv7()`)
 
 ## Quick Start
 
 ```bash
-# 1. Install dependencies
-mise setup
-
-# 2. Start services and seed database
-mise reset
-
-# 3. Start development
-mise dev
+bun install
+cp .env.example .env.local   # then set DATABASE_URL to your Supabase dev project
+bun db:migrate
+bun db:seed
+bun dev                      # http://localhost:3000
 ```
+
+Sign in with `test@example.com` / `password123` (created by the seed).
 
 ## Project Structure
 
 ```
-fullstack-starter/
-├── api/                   # Backend API
-│   ├── routes/v1+/        # OpenAPI routes (external API)
-│   ├── trpc/              # tRPC routers (dashboard)
-│   ├── services/          # Business logic
-│   └── databases/         # Drizzle schema
-│
-├── dashboard/             # React SPA
-│   └── app/routes/        # Pages
-│
-└── assets/components/ui/  # Shared UI components
+src/
+├── routes/              # File-based routes (pages + /api/auth/$ server route)
+├── components/          # App components; ui/ is the shadcn-style kit
+├── lib/                 # Client code: stores, player, i18n, Quran data loaders
+├── db/                  # Drizzle schema + relations
+├── server/              # Server code
+│   ├── *.server.ts      #   server-only (db, auth, env, data access)
+│   └── *.functions.ts   #   server functions + query options (callable from the client)
+├── router.tsx           # Router + per-request QueryClient
+└── start.ts             # Start config: client-rendered routes, CSRF middleware
+drizzle/                 # SQL migrations (generated)
+public/quran/            # Static Quran text, translations, tafsir (JSON)
+scripts/                 # seed.ts, fetch-quran.ts
 ```
 
-## Available Commands
+## Commands
 
-| Command | Description |
-|---------|-------------|
-| `mise setup` | Install dependencies |
-| `mise reset` | Reset development environment |
-| `mise dev` | Start API + dashboard in watch mode |
-| `mise check` | Type check + lint |
-| `mise test` | Run tests |
-| `mise clean` | Clean node_modules and logs |
-| `mise api <cmd>` | Run API CLI commands |
-| `mise ui add <component>` | Add a shadcn/ui component into `assets/components/ui/` (omit `<component>` for the interactive picker) |
+| Command             | Description                                        |
+| ------------------- | -------------------------------------------------- |
+| `bun dev`           | Dev server on port 3000                            |
+| `bun run build`     | Production build (`.output/`)                      |
+| `bun check`         | Biome format + lint (auto-fix) and type-check      |
+| `bun run test`      | Vitest (runs in rolled-back transactions)          |
+| `bun db:generate`   | Generate a SQL migration from schema changes       |
+| `bun db:migrate`    | Apply pending migrations                           |
+| `bun db:push`       | Push schema without a migration (prototyping only) |
+| `bun db:seed`       | Truncate and reseed the dev DB                     |
+| `bun db:studio`     | Drizzle Studio on port 4444                        |
+| `bun quran:fetch`   | Download Quran content into `public/quran/`        |
+| `bun ui add <name>` | Add a shadcn component into `src/components/ui/`   |
 
-### API CLI Commands
+## Deploying to Vercel
 
-| Command | Description |
-|---------|-------------|
-| `mise api start` | Start API server |
-| `mise api db:gen` | Generate SQL migration file |
-| `mise api db:migrate` | Run pending SQL migrations |
-| `mise api db:push` | Push schema changes |
-| `mise api db:seed` | Seed database |
+1. Import the repo in Vercel; `vercel.json` sets the TanStack Start framework preset and Bun install.
+2. Create a production Supabase project (Postgres 18+, since the schema uses `uuidv7()`). In its settings, turn off the Data API: the app talks to Postgres directly, and leaving the API on would expose the `public` tables (users, sessions, accounts) over REST.
+3. Set environment variables:
+   - `DATABASE_URL` — Supabase **transaction pooler** URL (port 6543). The direct `db.<ref>.supabase.co` host is IPv6-only, and Vercel can't reach it
+   - `BETTER_AUTH_SECRET` — 32+ random chars (`openssl rand -hex 32`)
+   - `BETTER_AUTH_URL` — production origin, e.g. `https://myquran.vercel.app` (optional; inferred per request when unset, which keeps preview deployments working)
+4. Run migrations against the production database before (or right after) deploying:
 
-### Database Workflow
+   ```bash
+   DATABASE_URL=<production session-pooler url> bun db:migrate
+   ```
 
-![Database Workflow](./assets/public/images/db-workflow.png)
-
-- **db:push** — Directly updates the database. Use during fast prototyping.
-- **db:generate** — Creates a versioned SQL migration file. Use when schema is stable.
-- **db:migrate** — Runs pending migrations. Use for versioned deployments.
-
-## Authentication
-
-**Dashboard (session-based):**
-- Login at `http://localhost:3000/login`
-- Test credentials: `test@example.com` / `password123`
-- Session persists in browser cookies
-- tRPC calls include session cookie automatically
-
-**API (API key-based):**
-- Include `X-Api-Key: <key>` header in requests
-- API key shown after running `mise up` or `mise api db:seed`
-
-### Auth Flow: OpenAPI vs tRPC
-
-**OpenAPI routes (external API via API key):**
-```typescript
-// X-Api-Key header → middleware → ctx.apiKey
-// ctx.apiKey.userId gives the user who owns the API key
-// ctx.user is NULL (no session)
-async handler({ ctx, response }) {
-  if (!ctx.apiKey) {
-    return response.unauthorized({ error: "API key required" });
-  }
-  const userId = ctx.apiKey.userId; // Use this!
-}
-```
-
-**tRPC routes (dashboard via session):**
-```typescript
-// Session cookie → Better Auth → ctx.user
-// ctx.user.id gives the logged-in user
-// ctx.apiKey is NULL (no API key)
-protectedProcedure.query(({ ctx }) => {
-  const userId = ctx.userId; // Use this!
-});
-```
-
-## Reference Examples
-
-A worked `posts` resource is threaded through every layer (schema, service, tRPC router, OpenAPI routes, webhook, seed data, tests, and UI) to demonstrate the pattern end to end. Swap it out for your own domain.
-
-- OpenAPI pattern: `api/routes/v1+/posts+/$id+/index.ts` (GET endpoint)
-- tRPC pattern: `api/trpc/init.ts`
-- UI components: `assets/components/ui/`
+   Migrations are deliberately not run in the Vercel build, so preview builds can't change the production schema.

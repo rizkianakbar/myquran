@@ -4,13 +4,10 @@
     "ignoreUnknown": true,
     "includes": [
       "**/*.{css,json,md,mjs,scss,toml,mjs,ts,tsx,yaml,yml}",
-      "!**/{.astro,.react-router}/**/*",
-      "!**/app/app/routeTree.gen.ts",
-      "!**/build/**/*",
-      "!**/databases/**/{data,schema}_migrations/**/*",
-      "!**/public/openapi/*.json",
+      "!**/src/routeTree.gen.ts",
+      "!**/drizzle/**/*",
       "!**/public/quran/**/*",
-      "!**/secure/**/*.v*.json",
+      "!**/{.output,.nitro,.tanstack,.vercel}",
       "!node_modules",
       "!package.json"
     ]
@@ -50,6 +47,9 @@
   },
   "linter": {
     "enabled": true,
+    "domains": {
+      "react": "recommended"
+    },
     "rules": {
       "complexity": {
         "noBannedTypes": "off"

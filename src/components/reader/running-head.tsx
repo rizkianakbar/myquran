@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { chromeHiddenStore } from '#/lib/chrome.ts';
 import { useProgress } from '#/lib/progress.ts';
 import { toArabicNumber } from '#/lib/quran/data.ts';
@@ -11,18 +11,22 @@ import { Rosette } from '../ornament/rosette.tsx';
 import { CompactSurahControls, type SurahControlsProps } from './surah-controls.tsx';
 
 /**
- * How far the reader has scrolled, 0–1. Unlike the topmost verse, this
- * reaches 1 exactly at the end of the surah.
+ * Fill `barRef`'s width with how far the reader has scrolled, 0–1. Unlike
+ * the topmost verse, this reaches 1 exactly at the end of the surah. The
+ * width is written straight to the element: a React update on every scroll
+ * event costs frames on a phone. Returns whether the end has been reached.
  */
-function useScrollFraction(rootRef: React.RefObject<HTMLElement | null>) {
-  const [fraction, setFraction] = useState(0);
+function useScrollProgress(rootRef: React.RefObject<HTMLElement | null>, barRef: React.RefObject<HTMLElement | null>) {
+  const [atEnd, setAtEnd] = useState(false);
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
     const measure = () => {
       const range = root.scrollHeight - root.clientHeight;
-      setFraction(range > 0 ? Math.min(1, root.scrollTop / range) : 1);
+      const fraction = range > 0 ? Math.min(1, root.scrollTop / range) : 1;
+      if (barRef.current) barRef.current.style.width = `${fraction * 100}%`;
+      setAtEnd(fraction > 0.995);
     };
     measure();
     root.addEventListener('scroll', measure, { passive: true });
@@ -32,9 +36,9 @@ function useScrollFraction(rootRef: React.RefObject<HTMLElement | null>) {
       root.removeEventListener('scroll', measure);
       resize.disconnect();
     };
-  }, [rootRef]);
+  }, [rootRef, barRef]);
 
-  return fraction;
+  return atEnd;
 }
 
 /**
@@ -56,10 +60,10 @@ export function RunningHead({
   const [pastHeader, setPastHeader] = useState(false);
   const chromeHidden = chromeHiddenStore.use();
   const visible = pastHeader && !chromeHidden;
-  const scroll = useScrollFraction(rootRef);
+  const barRef = useRef<HTMLSpanElement>(null);
+  const atEnd = useScrollProgress(rootRef, barRef);
   const { lastRead } = useProgress();
   const surah = chapter.number;
-  const atEnd = scroll > 0.995;
   // The last verses can never reach the top of the screen, so at the bottom
   // the topmost verse undercounts; name the final verse instead.
   const verse = atEnd ? chapter.versesCount : lastRead?.surah === surah ? lastRead.verse : 1;
@@ -114,7 +118,7 @@ export function RunningHead({
         <span
           aria-hidden="true"
           className="absolute bottom-0 left-0 h-0.75 rounded-r-full bg-gold transition-[width] duration-150 ease-out"
-          style={{ width: `${scroll * 100}%` }}
+          ref={barRef}
         />
       </div>
     </div>

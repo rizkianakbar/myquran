@@ -245,10 +245,19 @@
   font-family: var(--font-kufi);
 }
 
-/* Off-screen verses skip layout and paint; long surahs stay smooth. */
+/*
+ * Off-screen verses skip layout and paint, so a long surah opens fast. The
+ * reader then lays them out a few at a time while idle (`data-warm`); left
+ * skipped, each card would be laid out as it scrolls in, and a fast flick on
+ * a phone stutters.
+ */
 .verse-card {
   content-visibility: auto;
   contain-intrinsic-size: auto 14rem;
+}
+
+.verse-card[data-warm] {
+  content-visibility: visible;
 }
 
 /*

@@ -9,6 +9,7 @@
       "!**/build/**/*",
       "!**/databases/**/{data,schema}_migrations/**/*",
       "!**/public/openapi/*.json",
+      "!**/public/quran/**/*",
       "!**/secure/**/*.v*.json",
       "!node_modules",
       "!package.json"

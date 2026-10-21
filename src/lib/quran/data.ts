@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { queryOptions, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import type { Chapter, SurahData, TafsirData, TafsirSlug } from './types.ts';
 
@@ -33,8 +33,15 @@ export function getChapters(): Promise<Chapter[]> {
 /**
  * All 114 chapters; static for the life of the page.
  */
+export const chaptersQuery = queryOptions({
+  queryKey: ['quran', 'chapters'],
+  queryFn: getChapters,
+  staleTime: Infinity,
+  gcTime: Infinity,
+});
+
 export function useChapters() {
-  return useQuery({ queryKey: ['quran', 'chapters'], queryFn: getChapters, staleTime: Infinity, gcTime: Infinity });
+  return useQuery(chaptersQuery);
 }
 
 export function getSurah(surah: number): Promise<SurahData> {

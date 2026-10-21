@@ -17,7 +17,7 @@ import { chapterTranslatedName, useT } from '#/lib/i18n.ts';
 import { play, togglePause, usePlayer, warm } from '#/lib/player.ts';
 import { resolveLatin, resolveTranslation, setPref, usePrefs } from '#/lib/prefs.ts';
 import { progressStore, recordRead, setLastRead } from '#/lib/progress.ts';
-import { getSurah, isValidSurah, useChapters, useSurah } from '#/lib/quran/data.ts';
+import { chaptersQuery, getSurah, isValidSurah, useChapters, useSurah } from '#/lib/quran/data.ts';
 import type { SurahData, Verse } from '#/lib/quran/types.ts';
 import { useShortcut } from '#/lib/shortcuts.ts';
 import { bookmarksQueries, toggleBookmarkFn } from '#/server/bookmarks.functions.ts';
@@ -32,12 +32,39 @@ export const Route = createFileRoute('/surah/$surah')({
     },
     stringify: ({ surah }) => ({ surah: String(surah) }),
   },
+  // Load the static JSON before rendering, so the page appears whole instead
+  // of swapping a skeleton for verses of a different height. The skeleton is
+  // only shown if the load is slow enough to notice.
+  loader: async ({ context, params }) => {
+    await Promise.all([context.queryClient.ensureQueryData(chaptersQuery), getSurah(params.surah)]);
+  },
+  pendingMs: 300,
+  pendingComponent: SurahPending,
+  errorComponent: SurahLoadError,
   component: SurahPage,
   notFoundComponent: SurahNotFound,
 });
 
 const BISMILLAH = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ';
 const BISMILLAH_LATIN = { kemenag: 'Bismillāhir-raḥmānir-raḥīm', simple: 'Bismillahir rahmanir raheem' };
+
+function SurahPending() {
+  return (
+    <main className="min-w-0 grow overflow-y-auto">
+      <div className="mx-auto max-w-3xl px-4 pb-40 sm:px-6 lg:px-10">
+        <header className="pt-8 pb-10 sm:pt-10">
+          <div className="aspect-1000/240 w-full animate-pulse rounded-2xl bg-muted" />
+        </header>
+        <VerseSkeleton />
+      </div>
+    </main>
+  );
+}
+
+function SurahLoadError() {
+  const t = useT();
+  return <main className="grow p-10 text-center text-sm text-muted-foreground">{t.dataMissing}</main>;
+}
 
 function SurahNotFound() {
   const t = useT();
@@ -456,7 +483,7 @@ function SurahPage() {
         {...handlers}
         className="min-w-0 grow overflow-y-auto outline-none">
         {chapter && <RunningHead chapter={chapter} headerRef={headerRef} rootRef={mainRef} controls={controls} />}
-        <div className="mx-auto max-w-3xl px-4 pb-40 sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-3xl animate-in px-4 pb-40 duration-300 fade-in sm:px-6 lg:px-10">
           <header ref={headerRef} className="pt-8 pb-10 sm:pt-10">
             {chapter ? (
               <>

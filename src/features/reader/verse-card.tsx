@@ -1,9 +1,8 @@
-import { type KeyboardEvent, memo, useRef, useState } from 'react';
+import { type KeyboardEvent, memo, useState } from 'react';
 import { isSajdah, MarginMarker, SajdahNote } from '#/components/ornament/marginalia.tsx';
 import { toggleVerse } from '#/features/audio/audio.lib.ts';
 import { NoteEditor } from '#/features/notes/note-editor.tsx';
 import { TafsirPanel } from '#/features/tafsir/tafsir-panel.tsx';
-import { useNearViewport } from '#/hooks/use-near-viewport.ts';
 import type { Language } from '#/lib/prefs.ts';
 import type { Verse } from '#/lib/quran/types.ts';
 import { useCopyVerseLink, useLazyDrawer } from './verse-card.hooks.ts';
@@ -15,6 +14,10 @@ import { RecitingOrnament } from './verse-card-ornament.tsx';
 export interface VerseCardProps {
   surah: number;
   verse: Verse;
+  /**
+   * Within a couple of screens of the viewport (see `useNearVerses`).
+   */
+  near: boolean;
   translation: Language | null;
   /**
    * Transliteration to show under the Arabic, or null when Latin is off.
@@ -35,6 +38,7 @@ export interface VerseCardProps {
 export const VerseCard = memo(function VerseCard({
   surah,
   verse,
+  near,
   translation,
   latin,
   recitation,
@@ -52,8 +56,6 @@ export const VerseCard = memo(function VerseCard({
   // Far cards are the same text without the per-word spans or the actions
   // row: Al-Baqarah in full was 39k DOM nodes, slow to mount and to scroll.
   // The full card mounts two screens ahead, or whenever it is in use.
-  const articleRef = useRef<HTMLElement>(null);
-  const near = useNearViewport(articleRef);
   const hydrated = near || !!recitation || !!selectedWords || tafsirOpen || editing || more.open;
 
   function onKeyDown(event: KeyboardEvent<HTMLElement>) {
@@ -73,7 +75,6 @@ export const VerseCard = memo(function VerseCard({
     <div className="relative">
       <MarginMarker verse={verse.n} sajdah={sajdah} />
       <article
-        ref={articleRef}
         id={`v${verse.n}`}
         data-verse={verse.n}
         // biome-ignore lint/a11y/noNoninteractiveTabindex: verses take focus so j/k and the per-verse keys (P, T, C, B, N) work

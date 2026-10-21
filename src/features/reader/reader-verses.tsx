@@ -1,4 +1,4 @@
-import { Fragment, useMemo } from 'react';
+import { Fragment, useMemo, useRef } from 'react';
 import { JuzMarker, VerseDivider } from '#/components/ornament/dividers.tsx';
 import { usePlayer } from '#/features/audio/audio.hooks.ts';
 import type { PlayerState } from '#/features/audio/audio.lib.ts';
@@ -6,6 +6,7 @@ import { resolveLatin, resolveTranslation, usePrefs } from '#/lib/prefs.ts';
 import type { Chapter, SurahData, Verse } from '#/lib/quran/types.ts';
 import { groupPages } from './mushaf.lib.ts';
 import { MushafSheet } from './mushaf-sheet.tsx';
+import { useNearVerses } from './reader-verses.hooks.ts';
 import type { WordSelection } from './reader-word-popover.tsx';
 import { VerseCard, type VerseCardProps } from './verse-card.tsx';
 
@@ -67,19 +68,23 @@ export function ReaderVerses({
 }: ReaderVersesProps) {
   const prefs = usePrefs();
   const player = usePlayer();
+  const listRef = useRef<HTMLDivElement>(null);
+  const showMushaf = prefs.focusMode && !!chapter;
+  const nearVerses = useNearVerses(listRef, !showMushaf);
   const surah = surahData.surah;
 
-  if (prefs.focusMode && chapter) return <MushafView surahData={surahData} chapter={chapter} />;
+  if (showMushaf) return <MushafView surahData={surahData} chapter={chapter} />;
 
   const translation = resolveTranslation(prefs);
   return (
-    <div className="animate-in duration-300 fade-in">
+    <div ref={listRef} className="animate-in duration-300 fade-in">
       {surahData.verses.map((verse, i) => (
         <Fragment key={verse.key}>
           {i > 0 && <VerseSeparator verse={verse} previous={surahData.verses[i - 1]} />}
           <VerseCard
             surah={surah}
             verse={verse}
+            near={nearVerses.has(verse.n)}
             translation={translation}
             latin={resolveLatin(prefs, verse)}
             recitation={recitationFor(player, surah, verse.n)}

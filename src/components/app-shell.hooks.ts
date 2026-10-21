@@ -1,0 +1,94 @@
+import { useNavigate } from '@tanstack/react-router';
+import { useEffect } from 'react';
+import { skipVerse, stop, togglePause } from '#/features/audio/audio.lib.ts';
+import { onIdle } from '#/lib/idle.ts';
+import {
+  arabicFonts,
+  closeDock,
+  darkThemes,
+  dockStore,
+  stepArabicSize,
+  stepPlaybackRate,
+  toggleDock,
+  usePrefs,
+} from '#/lib/prefs.ts';
+import { getSurah } from '#/lib/quran/data.ts';
+import { useShortcut } from '#/lib/shortcuts.ts';
+
+/**
+ * Mirror theme, language and Arabic type preferences onto <html>.
+ */
+export function useApplyPrefs() {
+  const prefs = usePrefs();
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.theme = prefs.theme;
+    root.classList.toggle('dark', darkThemes.has(prefs.theme));
+    root.lang = prefs.language;
+    root.style.setProperty('--arabic-font', arabicFonts[prefs.arabicFont].family);
+    root.style.setProperty('--arabic-size', `${prefs.arabicSize}rem`);
+  }, [prefs.theme, prefs.language, prefs.arabicFont, prefs.arabicSize]);
+}
+
+const PREFETCH_START_MS = 2000;
+
+function onSlowOrMeteredConnection(): boolean {
+  const { connection } = navigator as { connection?: { saveData?: boolean; effectiveType?: string } };
+  return !!connection?.saveData || (!!connection?.effectiveType && connection.effectiveType !== '4g');
+}
+
+/**
+ * Once the app settles, pull every surah into memory one at a time while the
+ * browser is idle (~11 MB of JSON), so opening any surah after that is a
+ * memory read: no fetch, no parse, no skeleton. Skipped on Save-Data or a
+ * slow connection.
+ */
+export function usePrefetchAllSurahs() {
+  useEffect(() => {
+    if (onSlowOrMeteredConnection()) return;
+    let cancelled = false;
+    let cancelIdle = () => {};
+    let n = 1;
+    const next = () => {
+      if (cancelled || n > 114) return;
+      void getSurah(n++)
+        .catch(() => {})
+        .finally(() => {
+          cancelIdle = onIdle(next);
+        });
+    };
+    const timer = setTimeout(next, PREFETCH_START_MS);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      cancelIdle();
+    };
+  }, []);
+}
+
+/**
+ * App-wide shortcuts. Pages register their own on top (see `useShortcut`).
+ */
+export function useGlobalShortcuts() {
+  const navigate = useNavigate();
+
+  useShortcut('playPause', togglePause);
+  useShortcut('stop', stop);
+  useShortcut('prevRecited', () => skipVerse(-1));
+  useShortcut('nextRecited', () => skipVerse(1));
+  useShortcut('slower', () => stepPlaybackRate(-1));
+  useShortcut('faster', () => stepPlaybackRate(1));
+  useShortcut('biggerText', () => stepArabicSize(1));
+  useShortcut('smallerText', () => stepArabicSize(-1));
+  useShortcut('surahIndex', () => toggleDock('surahs'));
+  useShortcut('search', () => dockStore.set('search'));
+  useShortcut('journal', () => toggleDock('journal'));
+  useShortcut('help', () => toggleDock('shortcuts'));
+  useShortcut('home', () => navigate({ to: '/' }));
+  useShortcut('settings', () => navigate({ to: '/settings' }));
+  useShortcut('close', (event) => {
+    if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select')) event.target.blur();
+    closeDock();
+  });
+}

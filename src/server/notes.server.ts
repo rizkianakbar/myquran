@@ -1,7 +1,7 @@
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { notes } from '#/db/schema.ts';
-import type { VerseRef } from '#/server/schemas.ts';
 import type { Database } from './db.server.ts';
+import type { VerseRef } from './schemas.ts';
 
 /**
  * List a user's notes, most recently edited first.

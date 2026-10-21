@@ -84,6 +84,20 @@ export function resolveTranslation(prefs: Prefs): Language | null {
   return prefs.translation === 'auto' ? prefs.language : prefs.translation;
 }
 
+/**
+ * Arabic text size bounds and step, in rem.
+ */
+export const arabicSizeRange = { min: 1.25, max: 3.5, step: 0.125 };
+
+/**
+ * Grow (1) or shrink (-1) the Arabic text by one step, within bounds.
+ */
+export function stepArabicSize(direction: 1 | -1) {
+  const { min, max, step } = arabicSizeRange;
+  const next = prefsStore.get().arabicSize + direction * step;
+  setPref('arabicSize', Math.min(max, Math.max(min, next)));
+}
+
 export const playbackRates = [0.5, 0.75, 1, 1.25, 1.5];
 
 /**

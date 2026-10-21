@@ -29,3 +29,6 @@ node_modules/
 *.ipr
 *.iws
 .idea/
+
+# Generated Quran data (mise quran:fetch)
+app/public/quran

@@ -8,6 +8,21 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   clearScreen: false,
   resolve: { tsconfigPaths: true },
-  // Nitro picks the `vercel` preset automatically when building on Vercel.
-  plugins: [devtools(), nitro(), tailwindcss(), tanstackStart(), react()],
+  plugins: [
+    devtools(),
+    // Nitro picks the `vercel` preset automatically when building on Vercel.
+    nitro({
+      rolldownConfig: {
+        // TanStack Router ships "use client" for RSC bundlers; harmless in the
+        // server bundle, but Nitro's build warns once per module.
+        onwarn(warning, warn) {
+          if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return;
+          warn(warning);
+        },
+      },
+    }),
+    tailwindcss(),
+    tanstackStart(),
+    react(),
+  ],
 });

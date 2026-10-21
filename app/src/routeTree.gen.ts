@@ -9,11 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SurahSurahRouteImport } from './routes/surah.$surah'
 import { Route as AuthenticatedPostsRouteImport } from './routes/_authenticated.posts'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -28,6 +35,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SurahSurahRoute = SurahSurahRouteImport.update({
+  id: '/surah/$surah',
+  path: '/surah/$surah',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedPostsRoute = AuthenticatedPostsRouteImport.update({
   id: '/posts',
   path: '/posts',
@@ -37,36 +49,58 @@ const AuthenticatedPostsRoute = AuthenticatedPostsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/settings': typeof SettingsRoute
   '/posts': typeof AuthenticatedPostsRoute
+  '/surah/$surah': typeof SurahSurahRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/settings': typeof SettingsRoute
   '/posts': typeof AuthenticatedPostsRoute
+  '/surah/$surah': typeof SurahSurahRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/settings': typeof SettingsRoute
   '/_authenticated/posts': typeof AuthenticatedPostsRoute
+  '/surah/$surah': typeof SurahSurahRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/posts'
+  fullPaths: '/' | '/login' | '/settings' | '/posts' | '/surah/$surah'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/posts'
-  id: '__root__' | '/' | '/_authenticated' | '/login' | '/_authenticated/posts'
+  to: '/' | '/login' | '/settings' | '/posts' | '/surah/$surah'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/login'
+    | '/settings'
+    | '/_authenticated/posts'
+    | '/surah/$surah'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
+  SettingsRoute: typeof SettingsRoute
+  SurahSurahRoute: typeof SurahSurahRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -86,6 +120,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/surah/$surah': {
+      id: '/surah/$surah'
+      path: '/surah/$surah'
+      fullPath: '/surah/$surah'
+      preLoaderRoute: typeof SurahSurahRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/posts': {
@@ -114,6 +155,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
+  SettingsRoute: SettingsRoute,
+  SurahSurahRoute: SurahSurahRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -3,6 +3,7 @@ import {
   Bookmark,
   BookOpenText,
   Check,
+  ChevronDown,
   Ellipsis,
   Link2,
   ListVideo,
@@ -14,8 +15,9 @@ import {
 import { type KeyboardEvent, memo, useState } from 'react';
 import { Button } from '#/components/ui/button.tsx';
 import { Drawer, DrawerContent, DrawerTitle } from '#/components/ui/drawer.tsx';
+import { Menu, MenuContent, MenuItem, MenuTrigger } from '#/components/ui/menu.tsx';
 import { useT } from '#/lib/i18n.ts';
-import { play, toggleVerse } from '#/lib/player.ts';
+import { play, togglePause, toggleVerse } from '#/lib/player.ts';
 import type { Language } from '#/lib/prefs.ts';
 import { toArabicNumber } from '#/lib/quran/data.ts';
 import type { Verse } from '#/lib/quran/types.ts';
@@ -72,7 +74,6 @@ function VerseMoreSheet({
   verseKey,
   signedIn,
   copied,
-  onPlayFromHere,
   onCopyLink,
   onNote,
 }: {
@@ -81,7 +82,6 @@ function VerseMoreSheet({
   verseKey: string;
   signedIn: boolean;
   copied: boolean;
-  onPlayFromHere: () => void;
   onCopyLink: () => Promise<void>;
   onNote: () => void;
 }) {
@@ -100,10 +100,6 @@ function VerseMoreSheet({
           {t.moreActions} <span className="text-gold-ink tabular-nums">{verseKey}</span>
         </DrawerTitle>
         <div className="flex flex-col gap-0.5 px-2">
-          <button type="button" className={row} onClick={then(onPlayFromHere)}>
-            <ListVideo />
-            {t.playFromHere}
-          </button>
           <button type="button" className={row} onClick={then(onCopyLink)}>
             {copied ? <Check /> : <Link2 />}
             {copied ? t.copied : t.copyLink}
@@ -179,8 +175,9 @@ export const VerseCard = memo(function VerseCard({
     if (open) setMoreMounted(true);
     setMoreOpenState(open);
   };
-  const isPlaying = !!recitation?.playing && recitation.single;
-  const isLoading = !!recitation?.loading && recitation.single;
+  // Whichever mode is reciting this verse, its button pauses it.
+  const isPlaying = !!recitation?.playing;
+  const isLoading = !!recitation?.loading;
 
   async function copyLink() {
     await navigator.clipboard.writeText(`${location.origin}/surah/${surah}#v${verse.n}`);
@@ -273,23 +270,36 @@ export const VerseCard = memo(function VerseCard({
 
         <div className="mt-3 flex flex-wrap items-center gap-0.5">
           <span className="mr-2 text-xs text-gold-ink tabular-nums">{verse.key}</span>
-          <ActionButton active={isPlaying || isLoading} onClick={() => toggleVerse(surah, verse.n)}>
-            {isLoading ? <Loader2 className="animate-spin" /> : isPlaying ? <Pause /> : <Play />}
-            {isPlaying ? t.pause : t.play}
-          </ActionButton>
+          {isPlaying || isLoading ? (
+            <ActionButton active onClick={togglePause}>
+              {isLoading ? <Loader2 className="animate-spin" /> : <Pause />}
+              {t.pause}
+            </ActionButton>
+          ) : (
+            <Menu>
+              <MenuTrigger render={<ActionButton />}>
+                <Play />
+                {t.play}
+                <ChevronDown className="-mr-0.5 opacity-70" />
+              </MenuTrigger>
+              <MenuContent>
+                <MenuItem onClick={() => play(surah, verse.n)}>
+                  <Play />
+                  {t.playThisAyah}
+                </MenuItem>
+                <MenuItem onClick={() => play(surah, verse.n, { continuous: true })}>
+                  <ListVideo />
+                  {t.playFromHere}
+                </MenuItem>
+              </MenuContent>
+            </Menu>
+          )}
           <ActionButton active={tafsirOpen} aria-expanded={tafsirOpen} onClick={() => setTafsirOpen((open) => !open)}>
             <BookOpenText />
             {t.tafsir}
           </ActionButton>
 
           {/* Secondary actions: inline from md up, behind ⋯ on phones. */}
-          <ActionButton
-            className="hidden md:inline-flex"
-            title={t.playFromHere}
-            aria-label={t.playFromHere}
-            onClick={() => play(surah, verse.n, { continuous: true })}>
-            <ListVideo />
-          </ActionButton>
           <ActionButton className="hidden md:inline-flex" onClick={copyLink}>
             {copied ? <Check /> : <Link2 />}
             {copied ? t.copied : t.copyLink}
@@ -350,7 +360,6 @@ export const VerseCard = memo(function VerseCard({
             verseKey={verse.key}
             signedIn={signedIn}
             copied={copied}
-            onPlayFromHere={() => play(surah, verse.n, { continuous: true })}
             onCopyLink={copyLink}
             onNote={() => setEditing(true)}
           />

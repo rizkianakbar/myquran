@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router';
+import { useRouter } from '@tanstack/react-router';
 import {
   Bookmark,
   BookOpenText,
@@ -13,7 +13,7 @@ import {
   Play,
 } from 'lucide-react';
 import { type KeyboardEvent, memo, useState } from 'react';
-import { Button } from '#/components/ui/button.tsx';
+import { buttonVariants } from '#/components/ui/button.tsx';
 import { Drawer, DrawerContent, DrawerTitle } from '#/components/ui/drawer.tsx';
 import { Menu, MenuContent, MenuItem, MenuTrigger } from '#/components/ui/menu.tsx';
 import { useT } from '#/lib/i18n.ts';
@@ -50,18 +50,85 @@ export interface VerseCardProps {
   onToggleBookmark: (verse: number) => void;
 }
 
-function ActionButton({ active, className, ...props }: React.ComponentProps<typeof Button> & { active?: boolean }) {
+// Every verse carries these, so they stay plain elements: a long surah renders
+// hundreds of them at once.
+function ActionButton({ active, className, ...props }: React.ComponentProps<'button'> & { active?: boolean }) {
   return (
-    <Button
-      variant="ghost"
-      size="xs"
+    <button
+      type="button"
       className={cn(
+        buttonVariants({ variant: 'ghost', size: 'xs' }),
         'text-muted-foreground',
         active && 'bg-highlight text-highlight-foreground hover:bg-highlight',
         className,
       )}
       {...props}
     />
+  );
+}
+
+/**
+ * A plain anchor to the sign-in page, routed client-side; lighter than a
+ * router `Link`, which subscribes to router state.
+ */
+function LoginLink({ onClick, ...props }: React.ComponentProps<'a'>) {
+  const router = useRouter();
+  return (
+    <a
+      href="/login"
+      onClick={(event) => {
+        onClick?.(event);
+        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey) return;
+        event.preventDefault();
+        void router.navigate({ to: '/login' });
+      }}
+      {...props}
+    />
+  );
+}
+
+/**
+ * Play ▾: this verse alone, or on from it. The menu is only created on first
+ * use, not up front for every verse.
+ */
+function PlayMenu({ surah, verse }: { surah: number; verse: number }) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const label = (
+    <>
+      <Play />
+      {t.play}
+      <ChevronDown className="-mr-0.5 opacity-70" />
+    </>
+  );
+
+  if (!mounted) {
+    return (
+      <ActionButton
+        aria-haspopup="menu"
+        onClick={() => {
+          setMounted(true);
+          setOpen(true);
+        }}>
+        {label}
+      </ActionButton>
+    );
+  }
+  return (
+    <Menu open={open} onOpenChange={setOpen}>
+      <MenuTrigger render={<ActionButton />}>{label}</MenuTrigger>
+      <MenuContent>
+        <MenuItem onClick={() => play(surah, verse)}>
+          <Play />
+          {t.playThisAyah}
+        </MenuItem>
+        <MenuItem onClick={() => play(surah, verse, { continuous: true })}>
+          <ListVideo />
+          {t.playFromHere}
+        </MenuItem>
+      </MenuContent>
+    </Menu>
   );
 }
 
@@ -110,10 +177,10 @@ function VerseMoreSheet({
               {t.note}
             </button>
           ) : (
-            <Link to="/login" className={row} onClick={() => onOpenChange(false)}>
+            <LoginLink className={row} onClick={() => onOpenChange(false)}>
               <NotebookPen />
               {t.signInToNote}
-            </Link>
+            </LoginLink>
           )}
         </div>
       </DrawerContent>
@@ -276,23 +343,7 @@ export const VerseCard = memo(function VerseCard({
               {t.pause}
             </ActionButton>
           ) : (
-            <Menu>
-              <MenuTrigger render={<ActionButton />}>
-                <Play />
-                {t.play}
-                <ChevronDown className="-mr-0.5 opacity-70" />
-              </MenuTrigger>
-              <MenuContent>
-                <MenuItem onClick={() => play(surah, verse.n)}>
-                  <Play />
-                  {t.playThisAyah}
-                </MenuItem>
-                <MenuItem onClick={() => play(surah, verse.n, { continuous: true })}>
-                  <ListVideo />
-                  {t.playFromHere}
-                </MenuItem>
-              </MenuContent>
-            </Menu>
+            <PlayMenu surah={surah} verse={verse.n} />
           )}
           <ActionButton active={tafsirOpen} aria-expanded={tafsirOpen} onClick={() => setTafsirOpen((open) => !open)}>
             <BookOpenText />
@@ -313,12 +364,10 @@ export const VerseCard = memo(function VerseCard({
               {t.note}
             </ActionButton>
           ) : (
-            <Link
-              to="/login"
-              className="hidden h-6 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted md:inline-flex [&_svg]:size-3">
+            <LoginLink className="hidden h-6 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted md:inline-flex [&_svg]:size-3">
               <NotebookPen />
               {t.note}
-            </Link>
+            </LoginLink>
           )}
           <ActionButton
             className="md:hidden"
@@ -341,14 +390,13 @@ export const VerseCard = memo(function VerseCard({
                 <span className="hidden md:inline">{bookmarked ? t.bookmarked : t.bookmark}</span>
               </ActionButton>
             ) : (
-              <Link
-                to="/login"
+              <LoginLink
                 aria-label={t.bookmark}
                 title={t.bookmark}
                 className="inline-flex h-6 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted [&_svg]:size-3">
                 <Bookmark />
                 <span className="hidden md:inline">{t.bookmark}</span>
-              </Link>
+              </LoginLink>
             )}
           </span>
         </div>

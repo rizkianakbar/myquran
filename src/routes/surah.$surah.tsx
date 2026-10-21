@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute, Link, notFound, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, notFound, useLocation, useNavigate } from '@tanstack/react-router';
 import { useServerFn } from '@tanstack/react-start';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MushafSheet } from '#/components/mushaf/mushaf-sheet.tsx';
 import { groupPages } from '#/components/mushaf/pages.ts';
 import { JuzMarker, SurahEnd, VerseDivider } from '#/components/ornament/dividers.tsx';
@@ -14,13 +14,16 @@ import { WordPopover, type WordSelection } from '#/components/reader/word-popove
 import { authClient } from '#/lib/auth-client.ts';
 import { useHideChromeOnScroll } from '#/lib/chrome.ts';
 import { followStore, idleFollow, RESUME_FOLLOW_MS, setReturnToRecitation } from '#/lib/follow.ts';
+import { loadReaderFonts, useReaderFontsReady } from '#/lib/fonts.ts';
 import { chapterTranslatedName, useT } from '#/lib/i18n.ts';
 import { play, togglePause, usePlayer, warm } from '#/lib/player.ts';
-import { resolveLatin, resolveTranslation, setPref, usePrefs } from '#/lib/prefs.ts';
+import { prefsStore, resolveLatin, resolveTranslation, setPref, usePrefs } from '#/lib/prefs.ts';
 import { progressStore, recordRead, setLastRead } from '#/lib/progress.ts';
 import { chaptersQuery, getSurah, isValidSurah, useChapters, useSurah } from '#/lib/quran/data.ts';
+import { juzRange } from '#/lib/quran/juz.ts';
 import type { SurahData, Verse } from '#/lib/quran/types.ts';
 import { useShortcut } from '#/lib/shortcuts.ts';
+import { cn } from '#/lib/utils.ts';
 import { bookmarksQueries, toggleBookmarkFn } from '#/server/bookmarks.functions.ts';
 import { notesQueries } from '#/server/notes.functions.ts';
 
@@ -33,14 +36,14 @@ export const Route = createFileRoute('/surah/$surah')({
     },
     stringify: ({ surah }) => ({ surah: String(surah) }),
   },
-  // Load the static JSON before rendering, so the page appears whole instead
-  // of swapping a skeleton for verses of a different height. The skeleton is
-  // only shown if the load is slow enough to notice.
+  // Wait only for the small chapter list (the header needs it). The surah and
+  // the fonts are just started here, as early as a hover preload; the page
+  // fades in when they land, so navigating never blocks on a large JSON file.
   loader: async ({ context, params }) => {
-    await Promise.all([context.queryClient.ensureQueryData(chaptersQuery), getSurah(params.surah)]);
+    void getSurah(params.surah).catch(() => {});
+    void loadReaderFonts(prefsStore.get().arabicFont);
+    await context.queryClient.ensureQueryData(chaptersQuery);
   },
-  pendingMs: 300,
-  pendingComponent: SurahPending,
   errorComponent: SurahLoadError,
   component: SurahPage,
   notFoundComponent: SurahNotFound,
@@ -48,19 +51,6 @@ export const Route = createFileRoute('/surah/$surah')({
 
 const BISMILLAH = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ';
 const BISMILLAH_LATIN = { kemenag: 'Bismillāhir-raḥmānir-raḥīm', simple: 'Bismillahir rahmanir raheem' };
-
-function SurahPending() {
-  return (
-    <main className="min-w-0 grow overflow-y-auto">
-      <div className="mx-auto max-w-3xl px-4 pb-40 sm:px-6 lg:px-10">
-        <header className="pt-8 pb-10 sm:pt-10">
-          <div className="aspect-1000/240 w-full animate-pulse rounded-2xl bg-muted" />
-        </header>
-        <VerseSkeleton />
-      </div>
-    </main>
-  );
-}
 
 function SurahLoadError() {
   const t = useT();
@@ -80,8 +70,9 @@ function useReadingTracker(
   main: React.RefObject<HTMLElement | null>,
   surahData: SurahData | undefined,
   focusMode: boolean,
+  revealed: number,
 ) {
-  // biome-ignore lint/correctness/useExhaustiveDependencies: re-attach when the verse DOM swaps for focus mode
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-attach when the verse DOM swaps for focus mode or more verses render
   useEffect(() => {
     const root = main.current;
     if (!root || !surahData) return;
@@ -117,17 +108,146 @@ function useReadingTracker(
       observer.disconnect();
       root.removeEventListener('scroll', onScroll);
     };
-  }, [main, surahData, focusMode]);
+  }, [main, surahData, focusMode, revealed]);
 }
 
-function useScrollToHash(surahData: SurahData | undefined) {
+/**
+ * Verses rendered in the first pass; enough to fill a tall screen.
+ */
+const FIRST_VERSES = 12;
+
+/**
+ * How many of the surah's verses to render. A long surah (Al-Baqarah has 286)
+ * paints its opening verses first, then fills in the rest in a transition,
+ * which React renders in slices so the page stays responsive.
+ */
+function useRevealedVerses(surahData: SurahData | undefined): number {
+  const total = surahData?.verses.length ?? 0;
+  const [revealed, setRevealed] = useState({ surah: 0, count: 0 });
+  const count = revealed.surah === surahData?.surah ? revealed.count : Math.min(total, FIRST_VERSES);
+
   useEffect(() => {
-    if (!surahData) return;
-    const id = location.hash.slice(1);
-    const target = id ? document.getElementById(id) : null;
-    // Without a hash the router resets (or, going back, restores) the scroll.
-    if (target) target.scrollIntoView({ block: 'start' });
-  }, [surahData]);
+    if (!surahData || count >= total) return;
+    startTransition(() => setRevealed({ surah: surahData.surah, count: total }));
+  }, [surahData, count, total]);
+
+  return count;
+}
+
+/**
+ * How long a verse is held in place while the page around it settles.
+ */
+const SETTLE_MS = 1500;
+
+/**
+ * Keep the element `id` at `top` px from the viewport top while content
+ * around it settles: off-screen cards start at an estimated height and take
+ * their real one as they near the screen, which would otherwise push the
+ * verse being read away. Resize observers fire after layout and before
+ * paint, so the correction is never seen. Stops as soon as the reader scrolls.
+ */
+function holdInPlace(root: HTMLElement, id: string, top: number) {
+  const align = () => {
+    // Re-query: a placeholder may have been swapped for the real card.
+    const el = document.getElementById(id);
+    if (el) root.scrollTop += el.getBoundingClientRect().top - top;
+  };
+  const observer = new ResizeObserver(align);
+  for (const child of root.children) observer.observe(child);
+  const inputs = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const;
+  const release = () => {
+    observer.disconnect();
+    clearTimeout(timer);
+    for (const type of inputs) root.removeEventListener(type, release);
+  };
+  const timer = setTimeout(release, SETTLE_MS);
+  for (const type of inputs) root.addEventListener(type, release, { passive: true });
+  return release;
+}
+
+/**
+ * A verse's position in the reader: its element id and its offset from the
+ * viewport top. Positions are saved per history entry by verse, not pixels:
+ * on a fresh mount the cards above haven't been measured yet, so a pixel
+ * offset lands on the wrong verse.
+ */
+interface VersePosition {
+  id: string;
+  top: number;
+}
+
+const POSITIONS_KEY = 'surah-scroll';
+const MAX_POSITIONS = 50;
+
+const positions: Map<string, VersePosition> = (() => {
+  try {
+    return new Map(JSON.parse(sessionStorage.getItem(POSITIONS_KEY) ?? '[]'));
+  } catch {
+    return new Map();
+  }
+})();
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', () => {
+    try {
+      sessionStorage.setItem(POSITIONS_KEY, JSON.stringify([...positions].slice(-MAX_POSITIONS)));
+    } catch {
+      // Storage blocked: positions just don't survive a reload.
+    }
+  });
+}
+
+const VERSE_ID = /^v\d+$/;
+
+function topVerse(root: HTMLElement): VersePosition | null {
+  if (root.scrollTop === 0) return null;
+  const rootTop = root.getBoundingClientRect().top;
+  for (const el of root.querySelectorAll<HTMLElement>('[id^="v"]')) {
+    if (!VERSE_ID.test(el.id)) continue;
+    const rect = el.getBoundingClientRect();
+    if (rect.bottom > rootTop) return { id: el.id, top: rect.top };
+  }
+  return null;
+}
+
+/**
+ * The reader owns its scroll (the router's restoration is off for this
+ * route): back/forward and reloads return to the saved verse, a `#v12` link
+ * goes to that verse, and anything else starts at the top.
+ */
+function useScrollPosition(main: React.RefObject<HTMLElement | null>, surahData: SurahData | undefined) {
+  const { key, hash } = useLocation({ select: (l) => ({ key: l.state.__TSR_key ?? l.href, hash: l.hash }) });
+
+  useEffect(() => {
+    const root = main.current;
+    if (!root || !surahData) return;
+    const saved = positions.get(key);
+    const target = document.getElementById(saved?.id ?? hash);
+    let release: (() => void) | undefined;
+    if (saved && target) {
+      root.scrollTop += target.getBoundingClientRect().top - saved.top;
+      release = holdInPlace(root, saved.id, saved.top);
+    } else if (hash && target) {
+      target.scrollIntoView({ block: 'start' });
+      release = holdInPlace(root, hash, target.getBoundingClientRect().top);
+    } else root.scrollTop = 0;
+
+    let frame = 0;
+    const save = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const position = topVerse(root);
+        positions.delete(key);
+        if (position) positions.set(key, position);
+      });
+    };
+    root.addEventListener('scroll', save, { passive: true });
+    return () => {
+      release?.();
+      cancelAnimationFrame(frame);
+      root.removeEventListener('scroll', save);
+    };
+  }, [main, surahData, key, hash]);
 }
 
 /**
@@ -380,6 +500,7 @@ function SurahPage() {
   const player = usePlayer();
   const { data: chapters, isError: chaptersMissing } = useChapters();
   const surahData = useSurah(surah);
+  const fontsReady = useReaderFontsReady(prefs.arabicFont);
   const { data: session } = authClient.useSession();
   const signedIn = !!session;
   const mainRef = useRef<HTMLElement>(null);
@@ -392,8 +513,9 @@ function SurahPage() {
   const { noteByVerse, bookmarkedVerses, toggleBookmark } = useVerseAnnotations(surah, signedIn);
   const { selection, setSelection, handlers, onPopoverLeave } = useWordSelection(surahData);
 
-  useReadingTracker(mainRef, surahData, prefs.focusMode);
-  useScrollToHash(surahData);
+  const revealed = useRevealedVerses(surahData);
+  useReadingTracker(mainRef, surahData, prefs.focusMode, revealed);
+  useScrollPosition(mainRef, surahData);
   useHideChromeOnScroll(mainRef);
   useFollowRecitation(mainRef, surah);
 
@@ -485,7 +607,12 @@ function SurahPage() {
         {...handlers}
         className="min-w-0 grow overflow-y-auto outline-none">
         {chapter && <RunningHead chapter={chapter} headerRef={headerRef} rootRef={mainRef} controls={controls} />}
-        <div className="mx-auto max-w-3xl animate-in px-4 pb-40 duration-300 fade-in sm:px-6 lg:px-10">
+        {/* Laid out but transparent until the fonts land, so their swap reflows nothing anyone sees. */}
+        <div
+          className={cn(
+            'mx-auto max-w-3xl px-4 pb-40 transition-opacity duration-300 ease-out sm:px-6 lg:px-10',
+            !fontsReady && 'opacity-0',
+          )}>
           <header ref={headerRef} className="pt-8 pb-10 sm:pt-10">
             {chapter ? (
               <>
@@ -512,12 +639,10 @@ function SurahPage() {
                       <dt>{t.revelationOrder}</dt>
                       <dd className="text-foreground tabular-nums">{chapter.revelationOrder}</dd>
                     </div>
-                    {surahData && (
-                      <div className="flex gap-1.5">
-                        <dt>{t.juz}</dt>
-                        <dd className="text-foreground tabular-nums">{juzRange(surahData)}</dd>
-                      </div>
-                    )}
+                    <div className="flex gap-1.5">
+                      <dt>{t.juz}</dt>
+                      <dd className="text-foreground tabular-nums">{juzRange(chapter)}</dd>
+                    </div>
                     <div className="flex gap-1.5">
                       <dt>{t.pages}</dt>
                       <dd className="text-foreground tabular-nums">
@@ -555,10 +680,9 @@ function SurahPage() {
             </div>
           )}
 
-          {!surahData ? (
-            <VerseSkeleton />
-          ) : prefs.focusMode && chapter ? (
-            <div className="-mx-2 flex flex-col gap-7 py-4 sm:mx-0">
+          {/* Keyed by surah so each one fades in fresh, also when moving between surahs. */}
+          {!surahData ? null : prefs.focusMode && chapter ? (
+            <div key={surah} className="-mx-2 flex animate-in flex-col gap-7 py-4 duration-300 fade-in sm:mx-0">
               {mushafPages.map((page) => (
                 <MushafSheet
                   key={page.page}
@@ -571,8 +695,8 @@ function SurahPage() {
               ))}
             </div>
           ) : (
-            <div className="animate-in fade-in">
-              {surahData.verses.map((verse, i) => (
+            <div key={surah} className="animate-in duration-300 fade-in">
+              {surahData.verses.slice(0, revealed).map((verse, i) => (
                 <Fragment key={verse.key}>
                   {i > 0 && <VerseSeparator verse={verse} previous={surahData.verses[i - 1]} />}
                   <VerseCard
@@ -591,6 +715,12 @@ function SurahPage() {
                     signedIn={signedIn}
                     onToggleBookmark={toggleBookmark}
                   />
+                </Fragment>
+              ))}
+              {surahData.verses.slice(revealed).map((verse) => (
+                <Fragment key={verse.key}>
+                  <VerseSeparator verse={verse} previous={surahData.verses[verse.n - 2]} />
+                  <VersePlaceholder n={verse.n} />
                 </Fragment>
               ))}
             </div>
@@ -649,12 +779,6 @@ function recitationFor(
   return { word: player.word, playing: player.playing, loading: player.loading, single: !player.continuous };
 }
 
-function juzRange(surahData: SurahData): string {
-  const from = surahData.verses[0]?.juz;
-  const to = surahData.verses.at(-1)?.juz;
-  return from === to ? `${from}` : `${from}–${to}`;
-}
-
 /**
  * Between two verses: a juz' cartouche where a new juz' begins, a divider
  * carrying the page number where a new mushaf page begins, else a plain one.
@@ -664,25 +788,24 @@ function VerseSeparator({ verse, previous }: { verse: Verse; previous: Verse }) 
   return <VerseDivider page={verse.page !== previous.page ? verse.page : undefined} />;
 }
 
+/**
+ * Stands in for a verse not rendered yet. It is exactly the size an
+ * off-screen `.verse-card` reserves (its `contain-intrinsic-size` plus its
+ * padding), so swapping in the real card moves nothing, and it carries the
+ * verse's id so `#v200` links land before the card exists.
+ */
+function VersePlaceholder({ n }: { n: number }) {
+  return (
+    <div id={`v${n}`} aria-hidden="true" className="scroll-mt-6 py-8">
+      <div className="h-56" />
+    </div>
+  );
+}
+
 function Diamond() {
   return (
     <svg viewBox="0 0 20 20" aria-hidden="true" className="size-3 shrink-0 text-gold">
       <path d="M10 0 L20 10 L10 20 L0 10 Z M10 5 L15 10 L10 15 L5 10 Z" fill="currentColor" fillRule="evenodd" />
     </svg>
-  );
-}
-
-function VerseSkeleton() {
-  return (
-    <div aria-hidden>
-      {Array.from({ length: 5 }, (_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static placeholder rows
-        <div key={i} className="animate-pulse border-b py-6">
-          <div className="h-10 rounded-lg bg-muted" />
-          <div className="mt-4 h-4 w-4/5 rounded bg-muted" />
-          <div className="mt-2 h-4 w-3/5 rounded bg-muted" />
-        </div>
-      ))}
-    </div>
   );
 }

@@ -5,7 +5,7 @@ import { authClient } from '../lib/auth';
 export const Route = createFileRoute('/login')({
   beforeLoad: async () => {
     const { data: session } = await authClient.getSession();
-    if (session) throw redirect({ to: '/posts' });
+    if (session) throw redirect({ to: '/' });
   },
   component: LoginRoute,
 });
@@ -26,7 +26,6 @@ function LoginRoute() {
     setLoading(true);
 
     try {
-      console.log('result');
       const result = await authClient.signIn.email({
         email,
         password,
@@ -35,7 +34,7 @@ function LoginRoute() {
       if (result.error) {
         setError(result.error.message || 'Login failed');
       } else {
-        navigate({ to: '/posts' });
+        navigate({ to: '/' });
       }
     } catch {
       setError('An unexpected error occurred');
@@ -45,20 +44,20 @@ function LoginRoute() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow">
+    <main id="main-content" className="flex min-w-0 grow items-center justify-center overflow-y-auto p-4">
+      <div className="w-full max-w-md space-y-8 rounded-xl border bg-card p-8 text-card-foreground">
         <div>
-          <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">fullstack-starter</h2>
+          <h2 className="text-center text-3xl font-bold tracking-tight">myQuran</h2>
 
-          <p className="mt-2 text-center text-sm text-gray-600">Sign in to your account</p>
+          <p className="mt-2 text-center text-sm text-muted-foreground">Sign in to your account</p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">{error}</div>}
+          {error && <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">{error}</div>}
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium ">
                 Email address
               </label>
               <input
@@ -68,12 +67,12 @@ function LoginRoute() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
+                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 shadow-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring/50"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium ">
                 Password
               </label>
               <input
@@ -83,7 +82,7 @@ function LoginRoute() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
+                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 shadow-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring/50"
               />
             </div>
           </div>
@@ -91,13 +90,13 @@ function LoginRoute() {
           <button
             type="submit"
             disabled={loading}
-            className="group relative flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50">
+            className="group relative flex w-full justify-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2 disabled:opacity-50">
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
 
-          <p className="text-center text-xs text-gray-500">Test credentials: test@example.com / password123</p>
+          <p className="text-center text-xs text-muted-foreground">Test credentials: test@example.com / password123</p>
         </form>
       </div>
-    </div>
+    </main>
   );
 }

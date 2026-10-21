@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { index, pgTable } from 'drizzle-orm/pg-core';
+import { index, pgTable, uniqueIndex } from 'drizzle-orm/pg-core';
 
 /**
  * Users table for authentication.
@@ -121,4 +121,43 @@ export const posts = pgTable(
     updatedAt: t.timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
   }),
   (t) => [index('posts_created_by_idx').on(t.createdBy), index('posts_status_idx').on(t.status)],
+);
+
+/**
+ * Personal notes (reflections) on a verse. One note per user per verse;
+ * saving again replaces the body.
+ */
+export const notes = pgTable(
+  'notes',
+  (t) => ({
+    id: t.text('id').primaryKey().default(sql`uuidv7()`),
+    userId: t
+      .text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    surah: t.integer('surah').notNull(),
+    verse: t.integer('verse').notNull(),
+    body: t.text('body').notNull(),
+    createdAt: t.timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: t.timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+  }),
+  (t) => [uniqueIndex('notes_user_verse_idx').on(t.userId, t.surah, t.verse)],
+);
+
+/**
+ * Bookmarked verses.
+ */
+export const bookmarks = pgTable(
+  'bookmarks',
+  (t) => ({
+    id: t.text('id').primaryKey().default(sql`uuidv7()`),
+    userId: t
+      .text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    surah: t.integer('surah').notNull(),
+    verse: t.integer('verse').notNull(),
+    createdAt: t.timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+  }),
+  (t) => [uniqueIndex('bookmarks_user_verse_idx').on(t.userId, t.surah, t.verse)],
 );

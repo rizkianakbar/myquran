@@ -1,34 +1,116 @@
-## Quranmemo Clone
+## Tech Stack
 
-I made this project just for my learning tool or my way to implement what I've learned or explored, for the original app you can check and download it below
+- **Backend:** Express + tRPC + Drizzle ORM + PostgreSQL
+- **Frontend:** React + TanStack Router + tRPC Client
+- **Build:** TypeScript strict mode + Biome + Vitest
 
-[ORIGINAL WEB](https://community.quranmemo.com/public/dashboard)
+## Prerequisites
 
-[ORIGINAL APPS](https://play.google.com/store/apps/details?id=com.ndeztea.quranmemocommunity&hl=en) 
+- Node.js 24+
+- Docker (for PostgreSQL)
+- [mise](https://mise.jdx.dev/) (task runner)
 
+## Quick Start
 
-## Live Demo 
+```bash
+# 1. Install dependencies
+mise setup
 
-Click this link to see the [Demo!](https://quranmemo.vercel.app/) (better open it on your phone browser then install the app)
+# 2. Start services and seed database
+mise reset
 
-## How to run this project
+# 3. Start development
+mise dev
+```
 
-### 1. Install All Setup Requirement
+## Project Structure
 
-- NodeJs
-- NPM
+```
+fullstack-starter/
+├── api/                   # Backend API
+│   ├── routes/v1+/        # OpenAPI routes (external API)
+│   ├── trpc/              # tRPC routers (dashboard)
+│   ├── services/          # Business logic
+│   └── databases/         # Drizzle schema
+│
+├── dashboard/             # React SPA
+│   └── app/routes/        # Pages
+│
+└── assets/components/ui/  # Shared UI components
+```
 
-### 2. Run This Command on Project Folder
+## Available Commands
 
-``` 
-# Development
-npm i
-npm start
+| Command | Description |
+|---------|-------------|
+| `mise setup` | Install dependencies |
+| `mise reset` | Reset development environment |
+| `mise dev` | Start API + dashboard in watch mode |
+| `mise check` | Type check + lint |
+| `mise test` | Run tests |
+| `mise clean` | Clean node_modules and logs |
+| `mise api <cmd>` | Run API CLI commands |
+| `mise ui add <component>` | Add a shadcn/ui component into `assets/components/ui/` (omit `<component>` for the interactive picker) |
 
-# Production
-npm i
-npm build
-``` 
+### API CLI Commands
 
-The local server will live at port 3000 by default
- 
+| Command | Description |
+|---------|-------------|
+| `mise api start` | Start API server |
+| `mise api db:gen` | Generate SQL migration file |
+| `mise api db:migrate` | Run pending SQL migrations |
+| `mise api db:push` | Push schema changes |
+| `mise api db:seed` | Seed database |
+
+### Database Workflow
+
+![Database Workflow](./assets/public/images/db-workflow.png)
+
+- **db:push** — Directly updates the database. Use during fast prototyping.
+- **db:generate** — Creates a versioned SQL migration file. Use when schema is stable.
+- **db:migrate** — Runs pending migrations. Use for versioned deployments.
+
+## Authentication
+
+**Dashboard (session-based):**
+- Login at `http://localhost:3000/login`
+- Test credentials: `test@example.com` / `password123`
+- Session persists in browser cookies
+- tRPC calls include session cookie automatically
+
+**API (API key-based):**
+- Include `X-Api-Key: <key>` header in requests
+- API key shown after running `mise up` or `mise api db:seed`
+
+### Auth Flow: OpenAPI vs tRPC
+
+**OpenAPI routes (external API via API key):**
+```typescript
+// X-Api-Key header → middleware → ctx.apiKey
+// ctx.apiKey.userId gives the user who owns the API key
+// ctx.user is NULL (no session)
+async handler({ ctx, response }) {
+  if (!ctx.apiKey) {
+    return response.unauthorized({ error: "API key required" });
+  }
+  const userId = ctx.apiKey.userId; // Use this!
+}
+```
+
+**tRPC routes (dashboard via session):**
+```typescript
+// Session cookie → Better Auth → ctx.user
+// ctx.user.id gives the logged-in user
+// ctx.apiKey is NULL (no API key)
+protectedProcedure.query(({ ctx }) => {
+  const userId = ctx.userId; // Use this!
+});
+```
+
+## Reference Examples
+
+A worked `posts` resource is threaded through every layer (schema, service, tRPC router, OpenAPI routes, webhook, seed data, tests, and UI) to demonstrate the pattern end to end. Swap it out for your own domain.
+
+- OpenAPI pattern: `api/routes/v1+/posts+/$id+/index.ts` (GET endpoint)
+- tRPC pattern: `api/trpc/init.ts`
+- UI components: `assets/components/ui/`

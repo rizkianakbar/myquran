@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "biomejs.biome",
+    "bradlc.vscode-tailwindcss",
+    "eamodio.gitlens",
+    "editorconfig.editorconfig",
+    "github.vscode-github-actions",
+    "ms-azuretools.vscode-docker",
+    "mtxr.sqltools",
+    "redhat.vscode-yaml",
+    "unifiedjs.vscode-mdx"
+  ]
+}

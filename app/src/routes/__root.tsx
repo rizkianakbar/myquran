@@ -10,7 +10,7 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   return (
-    <TRPCProvider url="http://localhost:3001/trpc">
+    <TRPCProvider url={`${import.meta.env.VITE_API_URL ?? 'http://localhost:3001'}/trpc`}>
       <AppShell>
         <Outlet />
       </AppShell>

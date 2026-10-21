@@ -5,6 +5,7 @@ import { useT } from '#/lib/i18n.ts';
 import { usePlayer } from '#/lib/player.ts';
 import { closeDock, type DockView, dockStore } from '#/lib/prefs.ts';
 import { useIsPhone } from '#/lib/use-media-query.ts';
+import { useVisualViewport } from '#/lib/use-visual-viewport.ts';
 import { cn } from '#/lib/utils.ts';
 import { starOutline } from './ornament/geometry.ts';
 import { JournalPanel } from './sheets/journal-panel.tsx';
@@ -61,12 +62,19 @@ function PhoneSheet({ view }: { view: DockView | null }) {
   const lastView = useRef<DockView>('surahs');
   if (view) lastView.current = view;
   const shown = view ?? lastView.current;
+  // Sit above the on-screen keyboard (search focuses its field on open)
+  // rather than being pushed off the top of the screen by it.
+  const visible = useVisualViewport(view !== null);
 
   return (
     <Drawer open={view !== null} onOpenChange={(open) => !open && closeDock()} showSwipeHandle>
       <DrawerContent
         id="dock-sheet"
-        className="h-[88dvh] rounded-t-[1.75rem] border-gold/35 pb-[env(safe-area-inset-bottom)]">
+        className="rounded-t-[1.75rem] border-gold/35 pb-[env(safe-area-inset-bottom)]"
+        style={{
+          height: visible ? `min(88dvh, ${visible.height - 24}px)` : '88dvh',
+          bottom: visible?.bottom ?? 0,
+        }}>
         <header className="flex items-center gap-3 border-b px-5 pt-1 pb-3">
           <StarMark />
           <DrawerTitle className="font-serif text-lg font-normal">{titles[shown]}</DrawerTitle>

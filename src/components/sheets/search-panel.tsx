@@ -82,7 +82,7 @@ export function SearchPanel() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    inputRef.current?.focus();
+    inputRef.current?.focus({ preventScroll: true });
     // Re-focus when ⌘K is pressed while the panel is already open.
     return dockStore.subscribe(() => {
       if (dockStore.get() === 'search') inputRef.current?.focus();

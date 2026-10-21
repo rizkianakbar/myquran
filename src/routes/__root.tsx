@@ -21,7 +21,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      // resizes-content: Android shrinks the page for the keyboard instead of covering it.
+      { name: 'viewport', content: 'width=device-width, initial-scale=1, interactive-widget=resizes-content' },
       { title: 'myQuran' },
       { name: 'description', content: 'A calm Quran reader with word-by-word meanings, tafsir, and recitation.' },
       { name: 'theme-color', content: '#1b2a4e' },

@@ -131,7 +131,7 @@ function HomePage() {
 
         <section id="index" className="mt-16 scroll-mt-6">
           <h2 className="font-serif text-2xl">{t.allSurahs}</h2>
-          <ul className="mt-4 grid gap-x-12 lg:grid-cols-2">
+          <ul className="mt-4 grid grid-cols-1 gap-x-12 lg:grid-cols-2">
             {chapters.map((chapter) => (
               <IndexRow key={chapter.number} chapter={chapter} read={furthest[chapter.number] ?? 0} />
             ))}

@@ -1,10 +1,10 @@
 import { Volume2 } from 'lucide-react';
 import { useLayoutEffect, useRef, useState } from 'react';
-import { useT } from '#app/src/lib/i18n.ts';
-import { playWord } from '#app/src/lib/player.ts';
-import type { Language } from '#app/src/lib/prefs.ts';
-import type { Verse } from '#app/src/lib/quran/types.ts';
-import { Button } from '#assets/components/ui/button.tsx';
+import { Button } from '#/components/ui/button.tsx';
+import { useT } from '#/lib/i18n.ts';
+import { playWord } from '#/lib/player.ts';
+import type { Language } from '#/lib/prefs.ts';
+import type { Verse } from '#/lib/quran/types.ts';
 
 export interface WordSelection {
   verse: Verse;

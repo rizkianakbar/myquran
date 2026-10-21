@@ -1,7 +1,7 @@
-import { useT } from '#app/src/lib/i18n.ts';
-import { toArabicNumber } from '#app/src/lib/quran/data.ts';
-import type { Chapter, Verse } from '#app/src/lib/quran/types.ts';
-import { cn } from '#assets/lib/utils.ts';
+import { useT } from '#/lib/i18n.ts';
+import { toArabicNumber } from '#/lib/quran/data.ts';
+import type { Chapter, Verse } from '#/lib/quran/types.ts';
+import { cn } from '#/lib/utils.ts';
 import { starOutline } from '../ornament/geometry.ts';
 import { VerseMarker } from '../ornament/headpiece.tsx';
 import { Lattice } from '../ornament/lattice.tsx';

@@ -1,12 +1,12 @@
 import { Link, useParams } from '@tanstack/react-router';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { chapterTranslatedName, useT } from '#app/src/lib/i18n.ts';
-import { usePrefs } from '#app/src/lib/prefs.ts';
-import { useProgress } from '#app/src/lib/progress.ts';
-import { getSurah, useChapters } from '#app/src/lib/quran/data.ts';
-import type { Chapter } from '#app/src/lib/quran/types.ts';
-import { Input } from '#assets/components/ui/input.tsx';
-import { cn } from '#assets/lib/utils.ts';
+import { Input } from '#/components/ui/input.tsx';
+import { chapterTranslatedName, useT } from '#/lib/i18n.ts';
+import { usePrefs } from '#/lib/prefs.ts';
+import { useProgress } from '#/lib/progress.ts';
+import { getSurah, useChapters } from '#/lib/quran/data.ts';
+import type { Chapter } from '#/lib/quran/types.ts';
+import { cn } from '#/lib/utils.ts';
 
 /**
  * Latin transliterations vary ("Al-Fatihah", "al fatiha"); compare letters only.

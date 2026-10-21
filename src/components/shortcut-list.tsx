@@ -1,6 +1,6 @@
-import { useT } from '#app/src/lib/i18n.ts';
-import { shortcutGroups, shortcuts } from '#app/src/lib/shortcuts.ts';
-import { cn } from '#assets/lib/utils.ts';
+import { useT } from '#/lib/i18n.ts';
+import { shortcutGroups, shortcuts } from '#/lib/shortcuts.ts';
+import { cn } from '#/lib/utils.ts';
 
 function KeyCap({ children }: { children: string }) {
   return (

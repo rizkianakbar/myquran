@@ -1,9 +1,11 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useServerFn } from '@tanstack/react-start';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { useT } from '#app/src/lib/i18n.ts';
-import { trpc } from '#app/src/lib/trpc.tsx';
-import { Button } from '#assets/components/ui/button.tsx';
-import { Textarea } from '#assets/components/ui/textarea.tsx';
+import { Button } from '#/components/ui/button.tsx';
+import { Textarea } from '#/components/ui/textarea.tsx';
+import { useT } from '#/lib/i18n.ts';
+import { deleteNoteFn, notesQueries, saveNoteFn } from '#/server/notes.functions.ts';
 
 export function NoteEditor({
   surah,
@@ -17,29 +19,22 @@ export function NoteEditor({
   onDone: () => void;
 }) {
   const t = useT();
-  const utils = trpc.useUtils();
+  const queryClient = useQueryClient();
   const [body, setBody] = useState(initialBody);
-  const invalidate = () => Promise.all([utils.notes.bySurah.invalidate({ surah }), utils.notes.list.invalidate()]);
+  const onSuccess = async () => {
+    await queryClient.invalidateQueries({ queryKey: notesQueries.all });
+    onDone();
+  };
 
-  const save = trpc.notes.save.useMutation({
-    onSuccess: async () => {
-      await invalidate();
-      onDone();
-    },
-  });
-  const remove = trpc.notes.delete.useMutation({
-    onSuccess: async () => {
-      await invalidate();
-      onDone();
-    },
-  });
+  const save = useMutation({ mutationFn: useServerFn(saveNoteFn), onSuccess });
+  const remove = useMutation({ mutationFn: useServerFn(deleteNoteFn), onSuccess });
 
   return (
     <form
       className="mt-3 animate-in space-y-2 fade-in slide-in-from-top-1"
       onSubmit={(e) => {
         e.preventDefault();
-        if (body.trim()) save.mutate({ surah, verse, body });
+        if (body.trim()) save.mutate({ data: { surah, verse, body } });
       }}>
       <Textarea
         autoFocus
@@ -70,7 +65,7 @@ export function NoteEditor({
             variant="destructive"
             className="ml-auto"
             disabled={remove.isPending}
-            onClick={() => remove.mutate({ surah, verse })}>
+            onClick={() => remove.mutate({ data: { surah, verse } })}>
             {t.delete}
           </Button>
         )}

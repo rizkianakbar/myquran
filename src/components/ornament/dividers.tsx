@@ -1,5 +1,5 @@
-import { useT } from '#app/src/lib/i18n.ts';
-import { toArabicNumber } from '#app/src/lib/quran/data.ts';
+import { useT } from '#/lib/i18n.ts';
+import { toArabicNumber } from '#/lib/quran/data.ts';
 import { rosetteFor, starOutline } from './geometry.ts';
 import { Lattice } from './lattice.tsx';
 import { Rosette } from './rosette.tsx';

@@ -1,10 +1,10 @@
 import { Link } from '@tanstack/react-router';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { useT } from '#app/src/lib/i18n.ts';
-import { dockStore, resolveTranslation, usePrefs } from '#app/src/lib/prefs.ts';
-import { loadAllSurahs, useChapters } from '#app/src/lib/quran/data.ts';
-import type { SurahData } from '#app/src/lib/quran/types.ts';
-import { Input } from '#assets/components/ui/input.tsx';
+import { Input } from '#/components/ui/input.tsx';
+import { useT } from '#/lib/i18n.ts';
+import { dockStore, resolveTranslation, usePrefs } from '#/lib/prefs.ts';
+import { loadAllSurahs, useChapters } from '#/lib/quran/data.ts';
+import type { SurahData } from '#/lib/quran/types.ts';
 
 const MAX_RESULTS = 200;
 

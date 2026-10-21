@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useProgress } from '#app/src/lib/progress.ts';
-import { toArabicNumber } from '#app/src/lib/quran/data.ts';
-import type { Chapter } from '#app/src/lib/quran/types.ts';
-import { cn } from '#assets/lib/utils.ts';
+import { useProgress } from '#/lib/progress.ts';
+import { toArabicNumber } from '#/lib/quran/data.ts';
+import type { Chapter } from '#/lib/quran/types.ts';
+import { cn } from '#/lib/utils.ts';
 import { rosetteFor } from '../ornament/geometry.ts';
 import { VerseMarker } from '../ornament/headpiece.tsx';
 import { Lattice } from '../ornament/lattice.tsx';

@@ -1,11 +1,11 @@
 import { X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
-import { useT } from '#app/src/lib/i18n.ts';
-import { usePlayer } from '#app/src/lib/player.ts';
-import { closeDock, type DockView, dockStore } from '#app/src/lib/prefs.ts';
-import { useIsPhone } from '#app/src/lib/use-media-query.ts';
-import { Drawer, DrawerContent, DrawerTitle } from '#assets/components/ui/drawer.tsx';
-import { cn } from '#assets/lib/utils.ts';
+import { Drawer, DrawerContent, DrawerTitle } from '#/components/ui/drawer.tsx';
+import { useT } from '#/lib/i18n.ts';
+import { usePlayer } from '#/lib/player.ts';
+import { closeDock, type DockView, dockStore } from '#/lib/prefs.ts';
+import { useIsPhone } from '#/lib/use-media-query.ts';
+import { cn } from '#/lib/utils.ts';
 import { starOutline } from './ornament/geometry.ts';
 import { JournalPanel } from './sheets/journal-panel.tsx';
 import { SearchPanel } from './sheets/search-panel.tsx';

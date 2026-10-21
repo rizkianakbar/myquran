@@ -12,14 +12,14 @@ import {
   Play,
 } from 'lucide-react';
 import { type KeyboardEvent, memo, useState } from 'react';
-import { useT } from '#app/src/lib/i18n.ts';
-import { play, toggleVerse } from '#app/src/lib/player.ts';
-import type { Language } from '#app/src/lib/prefs.ts';
-import { toArabicNumber } from '#app/src/lib/quran/data.ts';
-import type { Verse } from '#app/src/lib/quran/types.ts';
-import { Button } from '#assets/components/ui/button.tsx';
-import { Drawer, DrawerContent, DrawerTitle } from '#assets/components/ui/drawer.tsx';
-import { cn } from '#assets/lib/utils.ts';
+import { Button } from '#/components/ui/button.tsx';
+import { Drawer, DrawerContent, DrawerTitle } from '#/components/ui/drawer.tsx';
+import { useT } from '#/lib/i18n.ts';
+import { play, toggleVerse } from '#/lib/player.ts';
+import type { Language } from '#/lib/prefs.ts';
+import { toArabicNumber } from '#/lib/quran/data.ts';
+import type { Verse } from '#/lib/quran/types.ts';
+import { cn } from '#/lib/utils.ts';
 import { VerseMarker } from '../ornament/headpiece.tsx';
 import { Lattice } from '../ornament/lattice.tsx';
 import { isSajdah, MarginMarker, SajdahNote } from '../ornament/marginalia.tsx';

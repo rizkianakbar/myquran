@@ -1,7 +1,7 @@
 import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { type ReactNode, useEffect } from 'react';
-import { useT } from '#app/src/lib/i18n.ts';
-import { skipVerse, stop, togglePause } from '#app/src/lib/player.ts';
+import { useT } from '#/lib/i18n.ts';
+import { skipVerse, stop, togglePause } from '#/lib/player.ts';
 import {
   arabicFonts,
   closeDock,
@@ -12,8 +12,8 @@ import {
   stepPlaybackRate,
   toggleDock,
   usePrefs,
-} from '#app/src/lib/prefs.ts';
-import { useShortcut } from '#app/src/lib/shortcuts.ts';
+} from '#/lib/prefs.ts';
+import { useShortcut } from '#/lib/shortcuts.ts';
 import { Dock } from './dock.tsx';
 import { DockSheet } from './dock-sheet.tsx';
 

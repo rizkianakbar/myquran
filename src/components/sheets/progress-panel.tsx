@@ -1,9 +1,9 @@
 import { Link } from '@tanstack/react-router';
 import { useMemo } from 'react';
-import { useT } from '#app/src/lib/i18n.ts';
-import { usePrefs } from '#app/src/lib/prefs.ts';
-import { computeStreak, dateKey, lastNDays, useProgress } from '#app/src/lib/progress.ts';
-import { useChapters } from '#app/src/lib/quran/data.ts';
+import { useT } from '#/lib/i18n.ts';
+import { usePrefs } from '#/lib/prefs.ts';
+import { computeStreak, dateKey, lastNDays, useProgress } from '#/lib/progress.ts';
+import { useChapters } from '#/lib/quran/data.ts';
 
 const TOTAL_VERSES = 6236;
 

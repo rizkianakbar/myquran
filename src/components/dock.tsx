@@ -1,12 +1,12 @@
 import { Link, useRouterState } from '@tanstack/react-router';
 import { ArrowDown, ArrowUp, BookOpen, Feather, Loader2, Pause, Play, Search, Settings, X } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { followStore, returnToRecitation } from '#app/src/lib/follow.ts';
-import { useT } from '#app/src/lib/i18n.ts';
-import { stop, togglePause, usePlayer } from '#app/src/lib/player.ts';
-import { type DockView, dockStore, formatRate, stepPlaybackRate, toggleDock, usePrefs } from '#app/src/lib/prefs.ts';
-import { useChapters } from '#app/src/lib/quran/data.ts';
-import { cn } from '#assets/lib/utils.ts';
+import { followStore, returnToRecitation } from '#/lib/follow.ts';
+import { useT } from '#/lib/i18n.ts';
+import { stop, togglePause, usePlayer } from '#/lib/player.ts';
+import { type DockView, dockStore, formatRate, stepPlaybackRate, toggleDock, usePrefs } from '#/lib/prefs.ts';
+import { useChapters } from '#/lib/quran/data.ts';
+import { cn } from '#/lib/utils.ts';
 import { Medallion } from './ornament/medallion.tsx';
 
 const dockButton =

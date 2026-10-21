@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from 'react';
-import { useT } from '#app/src/lib/i18n.ts';
-import { cn } from '#assets/lib/utils.ts';
+import { useT } from '#/lib/i18n.ts';
+import { cn } from '#/lib/utils.ts';
 import { NotesPanel, SignOutButton } from './notes-panel.tsx';
 import { ProgressPanel } from './progress-panel.tsx';
 

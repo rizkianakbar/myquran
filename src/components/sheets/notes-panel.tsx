@@ -1,16 +1,18 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { Bookmark, LogOut } from 'lucide-react';
-import { authClient } from '#app/src/lib/auth.ts';
-import { useT } from '#app/src/lib/i18n.ts';
-import { useChapters } from '#app/src/lib/quran/data.ts';
-import { trpc } from '#app/src/lib/trpc.tsx';
-import { Button, buttonVariants } from '#assets/components/ui/button.tsx';
+import { Button, buttonVariants } from '#/components/ui/button.tsx';
+import { authClient } from '#/lib/auth-client.ts';
+import { useT } from '#/lib/i18n.ts';
+import { useChapters } from '#/lib/quran/data.ts';
+import { bookmarksQueries } from '#/server/bookmarks.functions.ts';
+import { notesQueries } from '#/server/notes.functions.ts';
 
 function SignedInNotes() {
   const t = useT();
   const { data: chapters = [] } = useChapters();
-  const notes = trpc.notes.list.useQuery();
-  const bookmarks = trpc.bookmarks.list.useQuery();
+  const notes = useQuery(notesQueries.list());
+  const bookmarks = useQuery(bookmarksQueries.list());
   const surahName = (n: number) => chapters[n - 1]?.nameSimple ?? `Surah ${n}`;
   const isEmpty = notes.data?.length === 0 && bookmarks.data?.length === 0;
 
@@ -71,15 +73,17 @@ function SignedInNotes() {
 
 export function SignOutButton() {
   const t = useT();
+  const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
   if (!session) return null;
+  const signOut = async () => {
+    await authClient.signOut();
+    // Drop the previous user's private data from the cache.
+    queryClient.removeQueries({ queryKey: notesQueries.all });
+    queryClient.removeQueries({ queryKey: bookmarksQueries.all });
+  };
   return (
-    <Button
-      variant="ghost"
-      size="icon-sm"
-      title={t.signOut}
-      aria-label={t.signOut}
-      onClick={() => authClient.signOut()}>
+    <Button variant="ghost" size="icon-sm" title={t.signOut} aria-label={t.signOut} onClick={signOut}>
       <LogOut />
     </Button>
   );

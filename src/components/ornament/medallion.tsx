@@ -1,4 +1,4 @@
-import { cn } from '#assets/lib/utils.ts';
+import { cn } from '#/lib/utils.ts';
 import { starOutline, starPolygon } from './geometry.ts';
 
 /**

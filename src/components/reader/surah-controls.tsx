@@ -1,8 +1,8 @@
 import { Focus, Languages, Loader2, Pause, Play } from 'lucide-react';
-import { useT } from '#app/src/lib/i18n.ts';
-import { usePrefs } from '#app/src/lib/prefs.ts';
-import { reciters } from '#app/src/lib/quran/audio.ts';
-import { cn } from '#assets/lib/utils.ts';
+import { useT } from '#/lib/i18n.ts';
+import { usePrefs } from '#/lib/prefs.ts';
+import { reciters } from '#/lib/quran/audio.ts';
+import { cn } from '#/lib/utils.ts';
 
 export type SurahPlayback = 'idle' | 'loading' | 'playing' | 'paused';
 

@@ -1,4 +1,4 @@
-import type { SurahData, Verse } from '#app/src/lib/quran/types.ts';
+import type { SurahData, Verse } from '#/lib/quran/types.ts';
 
 /**
  * One page of the Madinah mushaf, holding only this surah's verses (a page

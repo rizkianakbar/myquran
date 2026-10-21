@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { cn } from '#assets/lib/utils.ts';
+import { cn } from '#/lib/utils.ts';
 import { rosetteFor, starOutline } from './geometry.ts';
 import { Rosette } from './rosette.tsx';
 

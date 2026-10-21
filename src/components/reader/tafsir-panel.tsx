@@ -1,14 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { Maximize2, X } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { useT } from '#app/src/lib/i18n.ts';
-import { usePrefs } from '#app/src/lib/prefs.ts';
-import { getTafsir } from '#app/src/lib/quran/data.ts';
-import type { TafsirSlug } from '#app/src/lib/quran/types.ts';
-import { useIsPhone } from '#app/src/lib/use-media-query.ts';
-import { Button } from '#assets/components/ui/button.tsx';
-import { Drawer, DrawerContent, DrawerTitle } from '#assets/components/ui/drawer.tsx';
-import { cn } from '#assets/lib/utils.ts';
+import { Button } from '#/components/ui/button.tsx';
+import { Drawer, DrawerContent, DrawerTitle } from '#/components/ui/drawer.tsx';
+import { useT } from '#/lib/i18n.ts';
+import { usePrefs } from '#/lib/prefs.ts';
+import { getTafsir } from '#/lib/quran/data.ts';
+import type { TafsirSlug } from '#/lib/quran/types.ts';
+import { useIsPhone } from '#/lib/use-media-query.ts';
+import { cn } from '#/lib/utils.ts';
 
 interface Source {
   slug: TafsirSlug;

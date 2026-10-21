@@ -46,6 +46,10 @@ Table names are prefixed by domain: `auth_*` for Better Auth, `quran_*` for app 
 
 ### Testing
 
+Tests sit next to the file they cover and are named after it: `features/audio/audio.lib.test.ts` tests `audio.lib.ts`, `server/annotations.test.ts` tests the notes/bookmarks data access. `src/test/` holds shared test helpers only, no tests. End-to-end browser tests, if added, belong outside `src/` (e.g. `e2e/`).
+
+`src/db/` is the schema (`schema.ts`, `relations.ts`) and `src/server/` the runtime that uses it; they stay apart because drizzle-kit, `scripts/seed.ts` and the test fixture import the schema too.
+
 `src/test/database.ts`'s `serverTest` (a Vitest fixture) runs each test against the real database (`DATABASE_URL`, so migrate it first) inside a transaction that is always rolled back: no mocks, and nothing is committed. Data-access functions accept `Database` (the db or a transaction) for this reason. Test the `*.server.ts` functions directly with the `db` fixture; `createTestUser(db)` makes a user with a unique email so tests don't collide with seeded or concurrent rows. `vitest.config.ts` is deliberately separate from `vite.config.ts` so tests don't boot the Start/Nitro plugins.
 
 ### Frontend

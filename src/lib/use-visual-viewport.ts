@@ -12,7 +12,8 @@ export function useVisualViewport(enabled: boolean): { bottom: number; height: n
 
   useEffect(() => {
     const vv = window.visualViewport;
-    if (!enabled || !vv) return setArea(null);
+    // Closed: keep the last value, so reopening renders at the right size at once.
+    if (!enabled || !vv) return;
     const update = () => {
       const bottom = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
       setArea((prev) =>

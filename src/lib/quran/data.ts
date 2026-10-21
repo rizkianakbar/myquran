@@ -85,18 +85,6 @@ export function useSurah(surah: number): SurahData | undefined {
   return data?.surah === surah ? data : getLoadedSurah(surah);
 }
 
-/**
- * Load every surah in idle time, reporting progress. Used by search.
- */
-export async function loadAllSurahs(onProgress: (loaded: number) => void): Promise<SurahData[]> {
-  const all: SurahData[] = [];
-  for (let n = 1; n <= 114; n++) {
-    all.push(await getSurah(n));
-    onProgress(n);
-  }
-  return all;
-}
-
 const ARABIC_DIGITS = '٠١٢٣٤٥٦٧٨٩';
 
 export function toArabicNumber(n: number): string {

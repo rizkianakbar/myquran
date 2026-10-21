@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Drawer, DrawerContent, DrawerTitle } from '#/components/ui/drawer.tsx';
 import { useT } from '#/lib/i18n.ts';
 import { usePlayer } from '#/lib/player.ts';
@@ -54,14 +54,48 @@ function CloseButton() {
 }
 
 /**
- * Phones: a swipeable bottom drawer. It keeps rendering the last view while
- * it slides away, so closing never flashes an empty sheet.
+ * Mounts its children a frame after it mounts, then fades them in. The sheet
+ * starts sliding on the first frame instead of waiting for a panel of a
+ * hundred rows to render; the slide runs on the compositor, so the panel's
+ * render then can't stall it.
+ */
+function AfterFirstFrame({ children }: { children: ReactNode }) {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => setReady(true));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  if (!ready) return null;
+  return <div className="flex min-h-0 grow animate-in flex-col duration-200 fade-in">{children}</div>;
+}
+
+/**
+ * Phones: a swipeable bottom drawer. It stays mounted once opened, so
+ * reopening it renders nothing new, and it keeps the last view while it
+ * slides away, so closing never flashes an empty sheet.
  */
 function PhoneSheet({ view }: { view: DockView | null }) {
   const titles = useSheetTitles();
   const lastView = useRef<DockView>('surahs');
   if (view) lastView.current = view;
   const shown = view ?? lastView.current;
+  // Mounted (hidden) once the page is idle, so even the first tap only has to
+  // slide it in; mounting it then cost a ~100ms stall on a mid-range phone.
+  const [warm, setWarm] = useState(false);
+  if (view && !warm) setWarm(true);
+
+  useEffect(() => {
+    if (typeof requestIdleCallback === 'undefined') {
+      const timer = setTimeout(() => setWarm(true), 2000);
+      return () => clearTimeout(timer);
+    }
+    const id = requestIdleCallback(() => setWarm(true), { timeout: 4000 });
+    return () => cancelIdleCallback(id);
+  }, []);
   // Sit above the on-screen keyboard (search focuses its field on open)
   // rather than being pushed off the top of the screen by it.
   const visible = useVisualViewport(view !== null);
@@ -69,6 +103,7 @@ function PhoneSheet({ view }: { view: DockView | null }) {
   return (
     <Drawer open={view !== null} onOpenChange={(open) => !open && closeDock()} showSwipeHandle>
       <DrawerContent
+        keepMounted={warm}
         id="dock-sheet"
         className="rounded-t-[1.75rem] border-gold/35 pb-[env(safe-area-inset-bottom)]"
         style={{
@@ -82,7 +117,9 @@ function PhoneSheet({ view }: { view: DockView | null }) {
           <CloseButton />
         </header>
         <div className="flex min-h-0 grow flex-col">
-          <SheetContent view={shown} />
+          <AfterFirstFrame key={shown}>
+            <SheetContent view={shown} />
+          </AfterFirstFrame>
         </div>
       </DrawerContent>
     </Drawer>

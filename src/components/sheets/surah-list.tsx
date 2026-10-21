@@ -1,8 +1,8 @@
-import { Link, useParams } from '@tanstack/react-router';
+import { useParams, useRouter } from '@tanstack/react-router';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { Input } from '#/components/ui/input.tsx';
 import { chapterTranslatedName, useT } from '#/lib/i18n.ts';
-import { usePrefs } from '#/lib/prefs.ts';
+import { dockStore, usePrefs } from '#/lib/prefs.ts';
 import { useProgress } from '#/lib/progress.ts';
 import { getSurah, useChapters } from '#/lib/quran/data.ts';
 import type { Chapter } from '#/lib/quran/types.ts';
@@ -36,6 +36,7 @@ export function SurahList() {
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query.trim());
   const listRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const filtered = useMemo(
     () => (deferredQuery ? chapters.filter((c) => matches(c, deferredQuery)) : chapters),
@@ -44,7 +45,12 @@ export function SurahList() {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: scroll only when the current surah or list size changes
   useEffect(() => {
-    listRef.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: 'nearest' });
+    const reveal = () => listRef.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: 'nearest' });
+    reveal();
+    // The phone sheet stays mounted while closed; reveal the current surah again when it reopens.
+    return dockStore.subscribe(() => {
+      if (dockStore.get() === 'surahs') requestAnimationFrame(reveal);
+    });
   }, [current, chapters.length]);
 
   return (
@@ -70,11 +76,19 @@ export function SurahList() {
           const read = furthest[chapter.number] ?? 0;
           const pct = Math.round((read / chapter.versesCount) * 100);
           return (
-            <Link
+            // Plain anchors routed client-side: 114 router `Link`s, each subscribing
+            // to router state, made the sheet's first open stutter.
+            <a
               key={chapter.number}
-              to="/surah/$surah"
-              params={{ surah: chapter.number }}
+              href={`/surah/${chapter.number}`}
+              onClick={(event) => {
+                if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                event.preventDefault();
+                void router.navigate({ to: '/surah/$surah', params: { surah: chapter.number } });
+              }}
+              // Start fetching on hover or touch, before the click lands.
               onMouseEnter={() => void getSurah(chapter.number)}
+              onTouchStart={() => void getSurah(chapter.number)}
               aria-current={chapter.number === current ? 'page' : undefined}
               className={cn(
                 'group flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm transition-colors hover:bg-muted',
@@ -98,7 +112,7 @@ export function SurahList() {
               <span dir="rtl" lang="ar" className="shrink-0 font-kufi text-base text-gold-ink">
                 {chapter.nameArabic}
               </span>
-            </Link>
+            </a>
           );
         })}
       </div>

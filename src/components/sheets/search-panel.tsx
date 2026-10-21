@@ -1,61 +1,11 @@
 import { Link } from '@tanstack/react-router';
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { Input } from '#/components/ui/input.tsx';
 import { useT } from '#/lib/i18n.ts';
 import { dockStore, resolveTranslation, usePrefs } from '#/lib/prefs.ts';
-import { loadAllSurahs, useChapters } from '#/lib/quran/data.ts';
-import type { SurahData } from '#/lib/quran/types.ts';
-
-const MAX_RESULTS = 200;
-
-/**
- * Strip harakat and Quranic annotation marks so a plain-typed Arabic query
- * matches the fully vocalized Uthmani text; alef variants fold to bare alef.
- */
-function normalizeArabic(text: string): string {
-  return text.replace(/[ؐ-ًؚ-ٰٟۖ-ۭ]/g, '').replace(/[آأإٱ]/g, 'ا');
-}
-
-function normalizeLatin(text: string): string {
-  return text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-}
-
-interface IndexedVerse {
-  surah: number;
-  verse: number;
-  arabic: string;
-  translation: string;
-  latin: string;
-  searchArabic: string;
-  searchTranslation: string;
-  searchLatin: string;
-}
-
-/**
- * Transliterations vary in hyphens, apostrophes and spacing ("bismillahir-
- * rahmanir" vs "bismillah ar-rahman"), so compare letters only.
- */
-function compactLatin(text: string): string {
-  return normalizeLatin(text).replace(/[^a-z0-9]/g, '');
-}
-
-let indexPromise: Promise<SurahData[]> | null = null;
-
-function useSearchIndex() {
-  const [surahs, setSurahs] = useState<SurahData[] | null>(null);
-  const [loaded, setLoaded] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    indexPromise ??= loadAllSurahs((n) => !cancelled && setLoaded(n));
-    indexPromise.then((all) => !cancelled && setSurahs(all));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return { surahs, loaded };
-}
+import { useChapters } from '#/lib/quran/data.ts';
+import { type SearchHit, searchIndexStore, searchVerses, warmSearch } from '#/lib/quran/search.ts';
+import { normalizeLatin } from '#/lib/quran/search-text.ts';
 
 function highlight(text: string, query: string) {
   const at = normalizeLatin(text).indexOf(normalizeLatin(query));
@@ -76,7 +26,7 @@ export function SearchPanel() {
   const prefs = usePrefs();
   const lang = resolveTranslation(prefs) ?? prefs.language;
   const { data: chapters = [] } = useChapters();
-  const { surahs, loaded } = useSearchIndex();
+  const { loaded, ready } = searchIndexStore.use();
   const [query, setQuery] = useState('');
   const deferred = useDeferredValue(query.trim());
   const inputRef = useRef<HTMLInputElement>(null);
@@ -89,40 +39,20 @@ export function SearchPanel() {
     });
   }, []);
 
-  const index = useMemo<IndexedVerse[]>(
-    () =>
-      (surahs ?? []).flatMap((s) =>
-        s.verses.map((v) => ({
-          surah: s.surah,
-          verse: v.n,
-          arabic: v.arabic,
-          translation: v[lang],
-          latin: v.latinId,
-          searchArabic: normalizeArabic(v.arabic),
-          searchTranslation: normalizeLatin(v[lang]),
-          // Both styles, so either spelling finds the verse.
-          searchLatin: compactLatin(`${v.latinId} ${v.latinEn}`),
-        })),
-      ),
-    [surahs, lang],
-  );
+  const [found, setFound] = useState<{ query: string; hits: SearchHit[] }>({ query: '', hits: [] });
 
-  const results = useMemo(() => {
-    if (deferred.length < 3) return [];
-    const isArabic = /[؀-ۿ]/.test(deferred);
-    const needle = isArabic ? normalizeArabic(deferred) : normalizeLatin(deferred);
-    const latinNeedle = compactLatin(deferred);
-    const found: { verse: IndexedVerse; viaLatin: boolean }[] = [];
-    for (const verse of index) {
-      if (isArabic ? verse.searchArabic.includes(needle) : verse.searchTranslation.includes(needle)) {
-        found.push({ verse, viaLatin: false });
-      } else if (!isArabic && latinNeedle.length >= 3 && verse.searchLatin.includes(latinNeedle)) {
-        found.push({ verse, viaLatin: true });
-      }
-      if (found.length >= MAX_RESULTS) break;
-    }
-    return found;
-  }, [index, deferred]);
+  useEffect(warmSearch, []);
+
+  useEffect(() => {
+    if (deferred.length < 3) return setFound({ query: deferred, hits: [] });
+    let cancelled = false;
+    // Until the new answer arrives, the previous results stay up.
+    void searchVerses(deferred, lang).then((hits) => !cancelled && setFound({ query: deferred, hits }));
+    return () => {
+      cancelled = true;
+    };
+  }, [deferred, lang]);
+  const results = found.hits;
 
   return (
     <div className="flex min-h-0 grow flex-col">
@@ -136,7 +66,7 @@ export function SearchPanel() {
           aria-label={t.searchPlaceholder}
         />
         <p className="text-xs text-muted-foreground" aria-live="polite">
-          {!surahs
+          {!ready
             ? t.searchLoading(Math.round((loaded / 114) * 100))
             : deferred.length > 0 && deferred.length < 3
               ? t.searchMinChars
@@ -146,7 +76,7 @@ export function SearchPanel() {
         </p>
       </div>
       <ol className="min-h-0 grow overflow-y-auto md:columns-2 md:gap-0">
-        {results.map(({ verse: r, viaLatin }) => (
+        {results.map((r) => (
           <li key={`${r.surah}:${r.verse}`} className="break-inside-avoid border-b">
             <Link
               to="/surah/$surah"
@@ -159,12 +89,12 @@ export function SearchPanel() {
                   {r.surah}:{r.verse}
                 </span>
               </span>
-              {viaLatin ? (
+              {r.viaLatin ? (
                 <span lang="ar-Latn" className="mt-1 line-clamp-3 block font-serif leading-snug text-gold-ink italic">
-                  {r.latin}
+                  {r.text}
                 </span>
               ) : (
-                <span className="mt-1 line-clamp-3 block leading-snug">{highlight(r.translation, deferred)}</span>
+                <span className="mt-1 line-clamp-3 block leading-snug">{highlight(r.text, found.query)}</span>
               )}
             </Link>
           </li>

@@ -80,7 +80,9 @@ export function useSurah(surah: number): SurahData | undefined {
     };
   }, [surah]);
 
-  return data?.surah === surah ? data : undefined;
+  // After a param change, read the cache directly so a surah the route loader
+  // already fetched renders on the first pass rather than after the effect.
+  return data?.surah === surah ? data : getLoadedSurah(surah);
 }
 
 /**

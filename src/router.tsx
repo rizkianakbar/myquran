@@ -22,6 +22,9 @@ export function getRouter() {
     // Let React Query own caching; the router just triggers loads.
     defaultPreloadStaleTime: 0,
     scrollRestoration: true,
+    // The reader scrolls inside <main>, not the window. Without this the router
+    // carries its offset over to the next page instead of starting at the top.
+    scrollToTopSelectors: ['#main-content'],
   });
 
   setupRouterSsrQueryIntegration({ router, queryClient });

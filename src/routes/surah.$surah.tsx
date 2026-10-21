@@ -119,14 +119,14 @@ function useReadingTracker(
   }, [main, surahData, focusMode]);
 }
 
-function useScrollToHash(main: React.RefObject<HTMLElement | null>, surahData: SurahData | undefined) {
+function useScrollToHash(surahData: SurahData | undefined) {
   useEffect(() => {
     if (!surahData) return;
     const id = location.hash.slice(1);
     const target = id ? document.getElementById(id) : null;
+    // Without a hash the router resets (or, going back, restores) the scroll.
     if (target) target.scrollIntoView({ block: 'start' });
-    else main.current?.scrollTo({ top: 0 });
-  }, [main, surahData]);
+  }, [surahData]);
 }
 
 /**
@@ -392,7 +392,7 @@ function SurahPage() {
   const { selection, setSelection, handlers, onPopoverLeave } = useWordSelection(surahData);
 
   useReadingTracker(mainRef, surahData, prefs.focusMode);
-  useScrollToHash(mainRef, surahData);
+  useScrollToHash(surahData);
   useFollowRecitation(mainRef, surah);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset the popover when the surah changes

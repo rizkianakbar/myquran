@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link, notFound, useLocation, useNavigate } from '@tanstack/react-router';
 import { useServerFn } from '@tanstack/react-start';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Fragment, startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MushafSheet } from '#/components/mushaf/mushaf-sheet.tsx';
 import { groupPages } from '#/components/mushaf/pages.ts';
 import { JuzMarker, SurahEnd, VerseDivider } from '#/components/ornament/dividers.tsx';
@@ -70,9 +70,8 @@ function useReadingTracker(
   main: React.RefObject<HTMLElement | null>,
   surahData: SurahData | undefined,
   focusMode: boolean,
-  revealed: number,
 ) {
-  // biome-ignore lint/correctness/useExhaustiveDependencies: re-attach when the verse DOM swaps for focus mode or more verses render
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-attach when the verse DOM swaps for focus mode
   useEffect(() => {
     const root = main.current;
     if (!root || !surahData) return;
@@ -108,30 +107,21 @@ function useReadingTracker(
       observer.disconnect();
       root.removeEventListener('scroll', onScroll);
     };
-  }, [main, surahData, focusMode, revealed]);
+  }, [main, surahData, focusMode]);
 }
 
 /**
- * Verses rendered in the first pass; enough to fill a tall screen.
+ * Warm the neighbouring surahs, so next/previous (and [ ]) open from memory.
+ * Debounced, so skipping quickly through surahs doesn't fetch each one.
  */
-const FIRST_VERSES = 12;
-
-/**
- * How many of the surah's verses to render. A long surah (Al-Baqarah has 286)
- * paints its opening verses first, then fills in the rest in a transition,
- * which React renders in slices so the page stays responsive.
- */
-function useRevealedVerses(surahData: SurahData | undefined): number {
-  const total = surahData?.verses.length ?? 0;
-  const [revealed, setRevealed] = useState({ surah: 0, count: 0 });
-  const count = revealed.surah === surahData?.surah ? revealed.count : Math.min(total, FIRST_VERSES);
-
+function useWarmNeighbours(surah: number) {
   useEffect(() => {
-    if (!surahData || count >= total) return;
-    startTransition(() => setRevealed({ surah: surahData.surah, count: total }));
-  }, [surahData, count, total]);
-
-  return count;
+    const timer = setTimeout(() => {
+      if (surah < 114) void getSurah(surah + 1).catch(() => {});
+      if (surah > 1) void getSurah(surah - 1).catch(() => {});
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [surah]);
 }
 
 /**
@@ -148,7 +138,7 @@ const SETTLE_MS = 1500;
  */
 function holdInPlace(root: HTMLElement, id: string, top: number) {
   const align = () => {
-    // Re-query: a placeholder may have been swapped for the real card.
+    // Looked up each time, in case React replaced the element meanwhile.
     const el = document.getElementById(id);
     if (el) root.scrollTop += el.getBoundingClientRect().top - top;
   };
@@ -232,19 +222,21 @@ function useScrollPosition(main: React.RefObject<HTMLElement | null>, surahData:
       release = holdInPlace(root, hash, target.getBoundingClientRect().top);
     } else root.scrollTop = 0;
 
-    let frame = 0;
+    // Once scrolling pauses: finding the top verse measures elements, too
+    // costly to do on every frame of a fast flick.
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const save = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
         const position = topVerse(root);
         positions.delete(key);
         if (position) positions.set(key, position);
-      });
+      }, 150);
     };
     root.addEventListener('scroll', save, { passive: true });
     return () => {
       release?.();
-      cancelAnimationFrame(frame);
+      clearTimeout(timer);
       root.removeEventListener('scroll', save);
     };
   }, [main, surahData, key, hash]);
@@ -513,8 +505,8 @@ function SurahPage() {
   const { noteByVerse, bookmarkedVerses, toggleBookmark } = useVerseAnnotations(surah, signedIn);
   const { selection, setSelection, handlers, onPopoverLeave } = useWordSelection(surahData);
 
-  const revealed = useRevealedVerses(surahData);
-  useReadingTracker(mainRef, surahData, prefs.focusMode, revealed);
+  useReadingTracker(mainRef, surahData, prefs.focusMode);
+  useWarmNeighbours(surah);
   useScrollPosition(mainRef, surahData);
   useHideChromeOnScroll(mainRef);
   useFollowRecitation(mainRef, surah);
@@ -696,7 +688,7 @@ function SurahPage() {
             </div>
           ) : (
             <div key={surah} className="animate-in duration-300 fade-in">
-              {surahData.verses.slice(0, revealed).map((verse, i) => (
+              {surahData.verses.map((verse, i) => (
                 <Fragment key={verse.key}>
                   {i > 0 && <VerseSeparator verse={verse} previous={surahData.verses[i - 1]} />}
                   <VerseCard
@@ -715,12 +707,6 @@ function SurahPage() {
                     signedIn={signedIn}
                     onToggleBookmark={toggleBookmark}
                   />
-                </Fragment>
-              ))}
-              {surahData.verses.slice(revealed).map((verse) => (
-                <Fragment key={verse.key}>
-                  <VerseSeparator verse={verse} previous={surahData.verses[verse.n - 2]} />
-                  <VersePlaceholder n={verse.n} />
                 </Fragment>
               ))}
             </div>
@@ -786,20 +772,6 @@ function recitationFor(
 function VerseSeparator({ verse, previous }: { verse: Verse; previous: Verse }) {
   if (verse.juz !== previous.juz) return <JuzMarker juz={verse.juz} />;
   return <VerseDivider page={verse.page !== previous.page ? verse.page : undefined} />;
-}
-
-/**
- * Stands in for a verse not rendered yet. It is exactly the size an
- * off-screen `.verse-card` reserves (its `contain-intrinsic-size` plus its
- * padding), so swapping in the real card moves nothing, and it carries the
- * verse's id so `#v200` links land before the card exists.
- */
-function VersePlaceholder({ n }: { n: number }) {
-  return (
-    <div id={`v${n}`} aria-hidden="true" className="scroll-mt-6 py-8">
-      <div className="h-56" />
-    </div>
-  );
 }
 
 function Diamond() {

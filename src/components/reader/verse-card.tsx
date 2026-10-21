@@ -12,11 +12,12 @@ import {
   Pause,
   Play,
 } from 'lucide-react';
-import { type KeyboardEvent, memo, useState } from 'react';
+import { type KeyboardEvent, memo, useRef, useState } from 'react';
 import { buttonVariants } from '#/components/ui/button.tsx';
 import { Drawer, DrawerContent, DrawerTitle } from '#/components/ui/drawer.tsx';
 import { Menu, MenuContent, MenuItem, MenuTrigger } from '#/components/ui/menu.tsx';
 import { useT } from '#/lib/i18n.ts';
+import { useNearViewport } from '#/lib/near-viewport.ts';
 import { play, togglePause, toggleVerse } from '#/lib/player.ts';
 import type { Language } from '#/lib/prefs.ts';
 import { toArabicNumber } from '#/lib/quran/data.ts';
@@ -242,6 +243,12 @@ export const VerseCard = memo(function VerseCard({
     if (open) setMoreMounted(true);
     setMoreOpenState(open);
   };
+  // Far cards are the same text without the per-word spans or the actions
+  // row: Al-Baqarah in full was 39k DOM nodes, slow to mount and to scroll.
+  // The full card mounts two screens ahead, or whenever it is in use.
+  const articleRef = useRef<HTMLElement>(null);
+  const near = useNearViewport(articleRef);
+  const hydrated = near || !!recitation || !!selectedWords || tafsirOpen || editing || moreOpen;
   // Whichever mode is reciting this verse, its button pauses it.
   const isPlaying = !!recitation?.playing;
   const isLoading = !!recitation?.loading;
@@ -269,6 +276,7 @@ export const VerseCard = memo(function VerseCard({
     <div className="relative">
       <MarginMarker verse={verse.n} sajdah={sajdah} />
       <article
+        ref={articleRef}
         id={`v${verse.n}`}
         data-verse={verse.n}
         // biome-ignore lint/a11y/noNoninteractiveTabindex: verses take focus so j/k and the per-verse keys (P, T, C, B, N) work
@@ -283,32 +291,45 @@ export const VerseCard = memo(function VerseCard({
           lang="ar"
           className={cn('font-arabic leading-[2.2] select-none', recitation && 'reciting')}
           style={{ fontSize: 'var(--arabic-size)' }}>
-          {verse.words.map((word, i) => {
-            const position = i + 1;
-            const selected = selectedWords && position >= selectedWords.from && position <= selectedWords.to;
-            const isLast = position === verse.words.length;
-            const span = (
-              <span
-                key={position}
-                data-word={position}
-                data-recite={recitation ? reciteState(position, recitation.word) : undefined}
-                className={cn(
-                  'cursor-pointer rounded-md transition-colors duration-100 [@media(hover:hover)]:hover:text-highlight-foreground',
-                  selected && 'bg-gold/20 text-gold-ink',
-                )}>
-                {word.a}
-                {isLast ? '' : ' '}
+          {!hydrated ? (
+            // Same text flow as the spans below, so swapping them moves nothing.
+            <>
+              {verse.words
+                .slice(0, -1)
+                .map((word) => `${word.a} `)
+                .join('')}
+              <span className="whitespace-nowrap">
+                {verse.words.at(-1)?.a} <VerseMarker n={toArabicNumber(verse.n)} />
               </span>
-            );
-            // The verse-end star must never wrap onto a line of its own.
-            return isLast ? (
-              <span key={position} className="whitespace-nowrap">
-                {span} <VerseMarker n={toArabicNumber(verse.n)} />
-              </span>
-            ) : (
-              span
-            );
-          })}
+            </>
+          ) : (
+            verse.words.map((word, i) => {
+              const position = i + 1;
+              const selected = selectedWords && position >= selectedWords.from && position <= selectedWords.to;
+              const isLast = position === verse.words.length;
+              const span = (
+                <span
+                  key={position}
+                  data-word={position}
+                  data-recite={recitation ? reciteState(position, recitation.word) : undefined}
+                  className={cn(
+                    'cursor-pointer rounded-md transition-colors duration-100 [@media(hover:hover)]:hover:text-highlight-foreground',
+                    selected && 'bg-gold/20 text-gold-ink',
+                  )}>
+                  {word.a}
+                  {isLast ? '' : ' '}
+                </span>
+              );
+              // The verse-end star must never wrap onto a line of its own.
+              return isLast ? (
+                <span key={position} className="whitespace-nowrap">
+                  {span} <VerseMarker n={toArabicNumber(verse.n)} />
+                </span>
+              ) : (
+                span
+              );
+            })
+          )}
         </p>
 
         {latin && (
@@ -335,71 +356,76 @@ export const VerseCard = memo(function VerseCard({
           </button>
         )}
 
-        <div className="mt-3 flex flex-wrap items-center gap-0.5">
-          <span className="mr-2 text-xs text-gold-ink tabular-nums">{verse.key}</span>
-          {isPlaying || isLoading ? (
-            <ActionButton active onClick={togglePause}>
-              {isLoading ? <Loader2 className="animate-spin" /> : <Pause />}
-              {t.pause}
-            </ActionButton>
-          ) : (
-            <PlayMenu surah={surah} verse={verse.n} />
-          )}
-          <ActionButton active={tafsirOpen} aria-expanded={tafsirOpen} onClick={() => setTafsirOpen((open) => !open)}>
-            <BookOpenText />
-            {t.tafsir}
-          </ActionButton>
-
-          {/* Secondary actions: inline from md up, behind ⋯ on phones. */}
-          <ActionButton className="hidden md:inline-flex" onClick={copyLink}>
-            {copied ? <Check /> : <Link2 />}
-            {copied ? t.copied : t.copyLink}
-          </ActionButton>
-          {signedIn ? (
-            <ActionButton
-              className="hidden md:inline-flex"
-              active={editing}
-              onClick={() => setEditing((open) => !open)}>
-              <NotebookPen />
-              {t.note}
-            </ActionButton>
-          ) : (
-            <LoginLink className="hidden h-6 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted md:inline-flex [&_svg]:size-3">
-              <NotebookPen />
-              {t.note}
-            </LoginLink>
-          )}
-          <ActionButton
-            className="md:hidden"
-            title={t.moreActions}
-            aria-label={t.moreActions}
-            aria-haspopup="dialog"
-            onClick={() => setMoreOpen(true)}>
-            <Ellipsis />
-          </ActionButton>
-
-          <span className="ml-auto">
-            {signedIn ? (
-              <ActionButton
-                active={bookmarked}
-                aria-pressed={bookmarked}
-                aria-label={bookmarked ? t.bookmarked : t.bookmark}
-                title={bookmarked ? t.bookmarked : t.bookmark}
-                onClick={() => onToggleBookmark(verse.n)}>
-                <Bookmark className={cn(bookmarked && 'fill-current')} />
-                <span className="hidden md:inline">{bookmarked ? t.bookmarked : t.bookmark}</span>
+        {!hydrated ? (
+          // The actions row's height (its h-6 buttons), held until it mounts.
+          <div aria-hidden="true" className="mt-3 h-6" />
+        ) : (
+          <div className="mt-3 flex flex-wrap items-center gap-0.5">
+            <span className="mr-2 text-xs text-gold-ink tabular-nums">{verse.key}</span>
+            {isPlaying || isLoading ? (
+              <ActionButton active onClick={togglePause}>
+                {isLoading ? <Loader2 className="animate-spin" /> : <Pause />}
+                {t.pause}
               </ActionButton>
             ) : (
-              <LoginLink
-                aria-label={t.bookmark}
-                title={t.bookmark}
-                className="inline-flex h-6 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted [&_svg]:size-3">
-                <Bookmark />
-                <span className="hidden md:inline">{t.bookmark}</span>
+              <PlayMenu surah={surah} verse={verse.n} />
+            )}
+            <ActionButton active={tafsirOpen} aria-expanded={tafsirOpen} onClick={() => setTafsirOpen((open) => !open)}>
+              <BookOpenText />
+              {t.tafsir}
+            </ActionButton>
+
+            {/* Secondary actions: inline from md up, behind ⋯ on phones. */}
+            <ActionButton className="hidden md:inline-flex" onClick={copyLink}>
+              {copied ? <Check /> : <Link2 />}
+              {copied ? t.copied : t.copyLink}
+            </ActionButton>
+            {signedIn ? (
+              <ActionButton
+                className="hidden md:inline-flex"
+                active={editing}
+                onClick={() => setEditing((open) => !open)}>
+                <NotebookPen />
+                {t.note}
+              </ActionButton>
+            ) : (
+              <LoginLink className="hidden h-6 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted md:inline-flex [&_svg]:size-3">
+                <NotebookPen />
+                {t.note}
               </LoginLink>
             )}
-          </span>
-        </div>
+            <ActionButton
+              className="md:hidden"
+              title={t.moreActions}
+              aria-label={t.moreActions}
+              aria-haspopup="dialog"
+              onClick={() => setMoreOpen(true)}>
+              <Ellipsis />
+            </ActionButton>
+
+            <span className="ml-auto">
+              {signedIn ? (
+                <ActionButton
+                  active={bookmarked}
+                  aria-pressed={bookmarked}
+                  aria-label={bookmarked ? t.bookmarked : t.bookmark}
+                  title={bookmarked ? t.bookmarked : t.bookmark}
+                  onClick={() => onToggleBookmark(verse.n)}>
+                  <Bookmark className={cn(bookmarked && 'fill-current')} />
+                  <span className="hidden md:inline">{bookmarked ? t.bookmarked : t.bookmark}</span>
+                </ActionButton>
+              ) : (
+                <LoginLink
+                  aria-label={t.bookmark}
+                  title={t.bookmark}
+                  className="inline-flex h-6 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted [&_svg]:size-3">
+                  <Bookmark />
+                  <span className="hidden md:inline">{t.bookmark}</span>
+                </LoginLink>
+              )}
+            </span>
+          </div>
+        )}
 
         {moreMounted && (
           <VerseMoreSheet

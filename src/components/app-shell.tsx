@@ -13,6 +13,7 @@ import {
   toggleDock,
   usePrefs,
 } from '#/lib/prefs.ts';
+import { getSurah } from '#/lib/quran/data.ts';
 import { useShortcut } from '#/lib/shortcuts.ts';
 import { Dock } from './dock.tsx';
 import { DockSheet } from './dock-sheet.tsx';
@@ -28,6 +29,34 @@ function useApplyPrefs() {
     root.style.setProperty('--arabic-font', arabicFonts[prefs.arabicFont].family);
     root.style.setProperty('--arabic-size', `${prefs.arabicSize}rem`);
   }, [prefs.theme, prefs.language, prefs.arabicFont, prefs.arabicSize]);
+}
+
+/**
+ * Once the app settles, pull every surah into memory one at a time while the
+ * browser is idle (~11 MB of JSON), so opening any surah after that is a
+ * memory read: no fetch, no parse, no skeleton. Skipped on Save-Data or a
+ * slow connection.
+ */
+function usePrefetchAllSurahs() {
+  useEffect(() => {
+    const connection = (navigator as { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    if (connection?.saveData || (connection?.effectiveType && connection.effectiveType !== '4g')) return;
+    let cancelled = false;
+    let n = 1;
+    const schedule = (fn: () => void) =>
+      typeof requestIdleCallback === 'undefined' ? setTimeout(fn, 150) : requestIdleCallback(fn, { timeout: 1000 });
+    const next = () => {
+      if (cancelled || n > 114) return;
+      void getSurah(n++)
+        .catch(() => {})
+        .finally(() => schedule(next));
+    };
+    const timer = setTimeout(next, 2000);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, []);
 }
 
 const ARABIC_SIZE = { min: 1.25, max: 3.5, step: 0.125 };
@@ -73,6 +102,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   useApplyPrefs();
   useGlobalShortcuts();
+  usePrefetchAllSurahs();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: close the sheet whenever the location changes, hash jumps included
   useEffect(() => closeDock(), [href]);

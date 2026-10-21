@@ -58,7 +58,7 @@ export const prefsStore = createStore<Prefs>(
     arabicFont: 'amiri',
     arabicSize: 2,
     translation: 'auto',
-    latin: false,
+    latin: true,
     latinStyle: 'kemenag',
     wordByWord: true,
     focusMode: false,

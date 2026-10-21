@@ -489,7 +489,7 @@ function SurahPage() {
                       <dd className="text-foreground tabular-nums">
                         {chapter.pages[0] === chapter.pages[1]
                           ? chapter.pages[0]
-                          : `${chapter.pages[0]}–${chapter.pages[1]}`}
+                          : `${chapter.pages[0]}-${chapter.pages[1]}`}
                       </dd>
                     </div>
                   </dl>
@@ -497,7 +497,7 @@ function SurahPage() {
                 <SurahControls {...controls} />
               </>
             ) : (
-              <div className="aspect-[1000/240] w-full animate-pulse rounded-2xl bg-muted" />
+              <div className="aspect-1000/240 w-full animate-pulse rounded-2xl bg-muted" />
             )}
           </header>
 

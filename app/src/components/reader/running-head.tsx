@@ -90,7 +90,7 @@ export function RunningHead({
             <span dir="rtl" lang="ar" className="font-kufi text-xl leading-none text-gold">
               {chapter.nameArabic}
             </span>
-            <span className="hidden truncate font-serif text-sm text-(--muted-foreground) sm:inline">
+            <span className="hidden truncate font-serif text-sm text-muted-foreground sm:inline">
               {chapter.nameSimple}
             </span>
           </div>
@@ -100,19 +100,17 @@ export function RunningHead({
             <span className="text-sm text-gold tabular-nums">
               {surah}:{verse}
             </span>
-            <span className="hidden text-xs text-(--muted-foreground) tabular-nums sm:inline">
-              / {chapter.versesCount}
-            </span>
+            <span className="hidden text-xs text-muted-foreground tabular-nums sm:inline">/ {chapter.versesCount}</span>
           </div>
 
           <CompactSurahControls {...controls} />
         </div>
 
-        <span aria-hidden="true" className="absolute inset-x-0 bottom-[3px] h-px bg-gold/30" />
+        <span aria-hidden="true" className="absolute inset-x-0 bottom-0.75 h-px bg-gold/30" />
         <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-px bg-gold/50" />
         <span
           aria-hidden="true"
-          className="absolute bottom-0 left-0 h-[3px] rounded-r-full bg-gold transition-[width] duration-150 ease-out"
+          className="absolute bottom-0 left-0 h-0.75 rounded-r-full bg-gold transition-[width] duration-150 ease-out"
           style={{ width: `${scroll * 100}%` }}
         />
       </div>

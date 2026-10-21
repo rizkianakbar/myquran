@@ -36,7 +36,7 @@ export function Rosette({
           cy={cy}
           r={r * (1 - i * 0.045)}
           pathLength={1}
-          className="draw fill-none stroke-(--gold)"
+          className="draw fill-none stroke-gold"
           strokeWidth={i === 0 ? 1.6 : 0.8}
           style={stagger(i)}
         />
@@ -44,7 +44,7 @@ export function Rosette({
       <path
         d={starPolygon({ cx, cy, r: r * 0.92, n: folds, k: step, rotation })}
         pathLength={1}
-        className="draw fill-none stroke-(--gold)"
+        className="draw fill-none stroke-gold"
         strokeWidth={1.2}
         strokeLinejoin="round"
         style={stagger(2)}
@@ -60,13 +60,13 @@ export function Rosette({
           rotation: rotation + Math.PI / folds,
         })}
         pathLength={1}
-        className="draw ornament-fill fill-(--gold)/25 stroke-(--gold)"
+        className="draw ornament-fill fill-gold/25 stroke-gold"
         strokeWidth={0.9}
         style={stagger(3)}
       />
       <path
         d={starOutline({ cx, cy, r: r * 0.24, inner: r * 0.15, n: folds / 2, rotation })}
-        className="ornament-fill fill-(--gold)"
+        className="ornament-fill fill-gold"
         style={stagger(5)}
       />
       {Array.from({ length: folds }, (_, i) => {
@@ -78,7 +78,7 @@ export function Rosette({
             cx={cx + r * 0.8 * Math.cos(a)}
             cy={cy + r * 0.8 * Math.sin(a)}
             r={r * 0.028}
-            className="ornament-fill fill-(--gold)"
+            className="ornament-fill fill-gold"
             style={stagger(6)}
           />
         );

@@ -87,7 +87,7 @@ export function Headpiece({
         height={H - 8}
         rx="16"
         pathLength={1}
-        className="draw fill-none stroke-(--gold)"
+        className="draw fill-none stroke-gold"
         strokeWidth={1.5}
       />
       <rect
@@ -97,7 +97,7 @@ export function Headpiece({
         height={H - 28}
         rx="10"
         pathLength={1}
-        className="draw fill-none stroke-(--gold)"
+        className="draw fill-none stroke-gold"
         strokeWidth={0.75}
         style={{ animationDelay: '120ms' }}
       />
@@ -109,7 +109,7 @@ export function Headpiece({
       <path
         d={cartouchePath(cart.x, cart.y, cart.w, cart.h)}
         pathLength={1}
-        className="draw fill-none stroke-(--gold)"
+        className="draw fill-none stroke-gold"
         strokeWidth={1.6}
         strokeLinejoin="round"
         style={{ animationDelay: '320ms' }}
@@ -117,7 +117,7 @@ export function Headpiece({
       <path
         d={cartouchePath(cart.x + 9, cart.y + 9, cart.w - 18, cart.h - 18)}
         pathLength={1}
-        className="draw fill-none stroke-(--gold)/60"
+        className="draw fill-none stroke-gold/60"
         strokeWidth={0.8}
         strokeLinejoin="round"
         style={{ animationDelay: '420ms' }}
@@ -128,7 +128,7 @@ export function Headpiece({
         y={subtitle ? CY + 6 : CY + 14}
         textAnchor="middle"
         direction="rtl"
-        className="ornament-fill fill-(--gold) font-kufi"
+        className="ornament-fill fill-gold font-kufi"
         style={{ fontSize: 62, animationDelay: '650ms' }}>
         {title}
       </text>
@@ -137,7 +137,7 @@ export function Headpiece({
           x={W / 2}
           y={CY + 42}
           textAnchor="middle"
-          className="ornament-fill fill-(--gold)/80 font-serif"
+          className="ornament-fill fill-gold/80 font-serif"
           style={{ fontSize: 17, letterSpacing: '0.04em', animationDelay: '800ms' }}>
           {subtitle}
         </text>
@@ -155,12 +155,12 @@ export function VerseMarker({ n, className }: { n: string; className?: string })
       <svg viewBox="0 0 40 40" aria-hidden="true" className="absolute inset-0 size-full">
         <path
           d={starOutline({ cx: 20, cy: 20, r: 19, inner: 14.5, n: 8 })}
-          className="fill-(--gold)/12 stroke-(--gold)"
+          className="fill-gold/12 stroke-gold"
           strokeWidth={1.3}
         />
-        <circle cx="20" cy="20" r="11" className="fill-none stroke-(--gold)/60" strokeWidth={0.8} />
+        <circle cx="20" cy="20" r="11" className="fill-none stroke-gold/60" strokeWidth={0.8} />
       </svg>
-      <span className="relative font-arabic text-[0.5em] leading-none font-semibold text-(--gold-ink)">{n}</span>
+      <span className="relative font-arabic text-[0.5em] leading-none font-semibold text-gold-ink">{n}</span>
     </span>
   );
 }

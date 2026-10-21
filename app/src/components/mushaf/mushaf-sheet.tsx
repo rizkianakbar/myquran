@@ -34,10 +34,10 @@ function Frame() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-2 sm:inset-3">
       <div className="absolute inset-0 rounded-[3px] ring-1 ring-gold/70" />
-      <div className="mushaf-band absolute inset-[3px]">
+      <div className="mushaf-band absolute inset-0.75">
         <Lattice size={14} className="opacity-90" />
       </div>
-      <div className="absolute inset-[11px] rounded-[2px] ring-1 ring-gold/55" />
+      <div className="absolute inset-2.75 rounded-xs ring-1 ring-gold/55" />
       <CornerRosette className="-top-1.5 -left-1.5" />
       <CornerRosette className="-top-1.5 -right-1.5" />
       <CornerRosette className="-bottom-1.5 -left-1.5" />

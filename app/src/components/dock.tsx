@@ -105,7 +105,7 @@ function NowPlaying() {
         onClick={() => stepPlaybackRate(1, { wrap: true })}
         className={cn(
           'flex h-7 min-w-11 items-center justify-center rounded-full px-2 text-xs tabular-nums ring-1 ring-gold/35 transition-colors hover:bg-gold/15 hover:text-gold-ink',
-          playbackRate === 1 ? 'text-(--muted-foreground)' : 'bg-gold/15 text-gold-ink ring-gold/60',
+          playbackRate === 1 ? 'text-muted-foreground' : 'bg-gold/15 text-gold-ink ring-gold/60',
         )}>
         {formatRate(playbackRate)}
       </button>
@@ -113,7 +113,7 @@ function NowPlaying() {
         type="button"
         aria-label={t.stop}
         onClick={stop}
-        className="flex size-8 items-center justify-center rounded-full text-(--muted-foreground) hover:text-gold-ink [&_svg]:size-3.5">
+        className="flex size-8 items-center justify-center rounded-full text-muted-foreground hover:text-gold-ink [&_svg]:size-3.5">
         <X />
       </button>
       {state.error && <span className="sr-only">{state.error}</span>}
@@ -155,7 +155,7 @@ export function Dock() {
           aria-label={t.home}
           title={t.home}
           aria-current={atHome ? 'page' : undefined}
-          className="group relative mx-2 -my-5 size-[4.25rem] shrink-0 rounded-full drop-shadow-[0_6px_14px_oklch(0.15_0.05_262/0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
+          className="group relative mx-2 -my-5 size-17 shrink-0 rounded-full drop-shadow-[0_6px_14px_oklch(0.15_0.05_262/0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
           <Medallion className="size-full" spinning={player.playing} />
         </Link>
 

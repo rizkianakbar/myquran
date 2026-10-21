@@ -28,9 +28,9 @@ function Frontispiece() {
             قُرْآنِي
           </p>
           <h1 className="mt-5 font-serif text-3xl leading-tight font-medium sm:text-4xl">{t.homeTagline}</h1>
-          <p className="mt-4 font-serif text-base leading-relaxed text-(--muted-foreground)">{t.homeIntro}</p>
+          <p className="mt-4 font-serif text-base leading-relaxed text-muted-foreground">{t.homeIntro}</p>
 
-          {isError && <p className="mt-6 text-sm text-(--destructive)">{t.dataMissing}</p>}
+          {isError && <p className="mt-6 text-sm text-destructive">{t.dataMissing}</p>}
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             {resume && lastRead ? (
@@ -51,13 +51,13 @@ function Frontispiece() {
             )}
             <a
               href="#index"
-              className="text-sm text-(--muted-foreground) underline-offset-4 hover:text-gold-ink hover:underline">
+              className="text-sm text-muted-foreground underline-offset-4 hover:text-gold-ink hover:underline">
               {t.allSurahs}
             </a>
           </div>
         </div>
 
-        <svg viewBox="0 0 400 400" aria-hidden="true" className="headpiece mx-auto w-full max-w-[22rem] md:-my-6">
+        <svg viewBox="0 0 400 400" aria-hidden="true" className="headpiece mx-auto w-full max-w-88 md:-my-6">
           <Rosette cx={200} cy={200} r={188} spec={HERO_ROSETTE} delay={150} />
           <Rosette cx={200} cy={200} r={74} spec={{ folds: 8, step: 3, rotation: Math.PI / 8, rings: 2 }} delay={600} />
         </svg>

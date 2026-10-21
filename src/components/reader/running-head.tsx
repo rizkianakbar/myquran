@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { chromeHiddenStore } from '#/lib/chrome.ts';
 import { useProgress } from '#/lib/progress.ts';
 import { toArabicNumber } from '#/lib/quran/data.ts';
 import type { Chapter } from '#/lib/quran/types.ts';
@@ -52,7 +53,9 @@ export function RunningHead({
   rootRef: React.RefObject<HTMLElement | null>;
   controls: SurahControlsProps;
 }) {
-  const [visible, setVisible] = useState(false);
+  const [pastHeader, setPastHeader] = useState(false);
+  const chromeHidden = chromeHiddenStore.use();
+  const visible = pastHeader && !chromeHidden;
   const scroll = useScrollFraction(rootRef);
   const { lastRead } = useProgress();
   const surah = chapter.number;
@@ -64,7 +67,7 @@ export function RunningHead({
   useEffect(() => {
     const header = headerRef.current;
     if (!header) return;
-    const observer = new IntersectionObserver(([entry]) => setVisible(!entry.isIntersecting), {
+    const observer = new IntersectionObserver(([entry]) => setPastHeader(!entry.isIntersecting), {
       root: rootRef.current,
       rootMargin: '-56px 0px 0px 0px',
     });

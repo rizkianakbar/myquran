@@ -12,6 +12,7 @@ import { SurahControls, type SurahControlsProps, type SurahPlayback } from '#/co
 import { VerseCard, type VerseCardProps } from '#/components/reader/verse-card.tsx';
 import { WordPopover, type WordSelection } from '#/components/reader/word-popover.tsx';
 import { authClient } from '#/lib/auth-client.ts';
+import { useHideChromeOnScroll } from '#/lib/chrome.ts';
 import { followStore, idleFollow, RESUME_FOLLOW_MS, setReturnToRecitation } from '#/lib/follow.ts';
 import { chapterTranslatedName, useT } from '#/lib/i18n.ts';
 import { play, togglePause, usePlayer, warm } from '#/lib/player.ts';
@@ -393,6 +394,7 @@ function SurahPage() {
 
   useReadingTracker(mainRef, surahData, prefs.focusMode);
   useScrollToHash(surahData);
+  useHideChromeOnScroll(mainRef);
   useFollowRecitation(mainRef, surah);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset the popover when the surah changes

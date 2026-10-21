@@ -1,6 +1,7 @@
 import { Link, useRouterState } from '@tanstack/react-router';
 import { ArrowDown, ArrowUp, BookOpen, Feather, Loader2, Pause, Play, Search, Settings, X } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { chromeHiddenStore } from '#/lib/chrome.ts';
 import { followStore, returnToRecitation } from '#/lib/follow.ts';
 import { useT } from '#/lib/i18n.ts';
 import { stop, togglePause, usePlayer } from '#/lib/player.ts';
@@ -131,9 +132,16 @@ export function Dock() {
   const player = usePlayer();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const atHome = pathname === '/';
+  const hidden = chromeHiddenStore.use();
 
   return (
-    <div className="dark pointer-events-none fixed inset-x-0 bottom-[calc(0.875rem+env(safe-area-inset-bottom))] z-50 flex flex-col items-center px-3">
+    <div
+      inert={hidden}
+      className={cn(
+        'dark pointer-events-none fixed inset-x-0 bottom-[calc(0.875rem+env(safe-area-inset-bottom))] z-50 flex flex-col items-center px-3 transition-[translate,opacity] duration-300 ease-out',
+        // Past the bottom edge, with room for the medallion that rises above the bar.
+        hidden && 'translate-y-[calc(100%+2.5rem+env(safe-area-inset-bottom))] opacity-0',
+      )}>
       <ReturnChip />
       <NowPlaying />
       <nav

@@ -151,7 +151,16 @@ function surahHead(chapter: Chapter): Head {
  * Pages that set their own <title>, in the reader's language. Per-device
  * tools, so not indexed.
  */
-const CLIENT_TITLED = new Set(['/settings', '/prayer-times', '/qibla', '/memorize']);
+const CLIENT_TITLED = new Set([
+  '/settings',
+  '/prayer-times',
+  '/qibla',
+  '/memorize',
+  '/duas',
+  '/hadith/',
+  '/hadith/$collection/',
+  '/hadith/$collection/$book',
+]);
 
 const noindex: Head = {
   meta: [{ title: SITE_NAME }, { name: 'robots', content: 'noindex' }],

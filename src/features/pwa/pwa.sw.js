@@ -16,6 +16,8 @@
  * - Quran data (`/quran/*`): from the cache, refreshed in the background,
  *   kept across app versions. Opening a surah, or the idle prefetch,
  *   saves it.
+ * - Hadith books (from the hadith-api CDN): like Quran data, so a book read
+ *   once opens offline.
  * - Never touched: auth, server functions, other origins (the recitation
  *   CDN, the city geocoder). They need the network and must not be cached.
  */
@@ -28,6 +30,8 @@ const APP_CACHE = `noorish-app-${VERSION}`;
 // cleanup deleted, so it must never be served after an update.
 const PAGE_CACHE = `noorish-pages-${VERSION}`;
 const DATA_CACHE = 'noorish-quran';
+const HADITH_CACHE = 'noorish-hadith';
+const HADITH_CDN = 'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/';
 const SHELL = '/';
 /**
  * A page not saved yet, on a weak connection, falls back to the home shell
@@ -51,7 +55,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      const keep = new Set([APP_CACHE, PAGE_CACHE, DATA_CACHE]);
+      const keep = new Set([APP_CACHE, PAGE_CACHE, DATA_CACHE, HADITH_CACHE]);
       for (const key of await caches.keys()) if (!keep.has(key)) await caches.delete(key);
       await self.clients.claim();
     })(),
@@ -66,6 +70,7 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
+  if (url.href.startsWith(HADITH_CDN)) return event.respondWith(staleWhileRevalidate(request, HADITH_CACHE, event));
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/_serverFn')) return;
 

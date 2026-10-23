@@ -1,6 +1,9 @@
+import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { BookCheck, Brain, Clock, Compass } from 'lucide-react';
+import { BookCheck, Brain, Clock, Compass, HandHeart, ScrollText } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { duaQueries } from '#/features/duas/duas.api.ts';
+import { categoryForHour } from '#/features/duas/duas.lib.ts';
 import { duePassages, passageLabel } from '#/features/memorize/memorize.lib.ts';
 import { memorizeStore } from '#/features/memorize/memorize.store.ts';
 import { usePlan } from '#/features/plans/plans.hooks.ts';
@@ -50,6 +53,10 @@ export function HomeTools() {
   const { learning, passages } = memorizeStore.use();
   const dueCount = duePassages(passages, dateKey(new Date())).length;
   const chapters = useChapters().data;
+  const duaCategories = useQuery(duaQueries.index()).data?.categories;
+  // The dua tile names the dhikr for this time of day, which is what the page opens on.
+  const duaDetail =
+    duaCategories?.find((c) => c.slug === categoryForHour(new Date().getHours()))?.name[language] ?? t.duas;
 
   return (
     <nav aria-label={t.tools} className="mx-auto mt-10 grid max-w-3xl grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3">
@@ -71,6 +78,12 @@ export function HomeTools() {
                 : t.memorizeStartShort
           }
         />
+      </Link>
+      <Link to="/duas" search={{}} className={tile}>
+        <TileBody icon={<HandHeart />} label={t.duas} detail={duaDetail} />
+      </Link>
+      <Link to="/hadith" className={tile}>
+        <TileBody icon={<ScrollText />} label={t.hadith} detail={t.hadithCollections.nawawi} />
       </Link>
       <Link to="/qibla" className={tile}>
         <TileBody

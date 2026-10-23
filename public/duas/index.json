@@ -1,0 +1,9 @@
+{
+  "categories": [
+    { "slug": "morning-dhikr", "name": { "en": "Morning Dhikr", "id": "Dzikir Pagi" }, "count": 19 },
+    { "slug": "evening-dhikr", "name": { "en": "Evening Dhikr", "id": "Dzikir Petang" }, "count": 19 },
+    { "slug": "dhikr-after-salah", "name": { "en": "Dhikr After Salah", "id": "Dzikir Setelah Shalat" }, "count": 13 },
+    { "slug": "daily-dua", "name": { "en": "Daily Dua", "id": "Doa Harian" }, "count": 38 },
+    { "slug": "selected-dua", "name": { "en": "Selected Dua", "id": "Doa Pilihan" }, "count": 8 }
+  ]
+}

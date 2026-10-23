@@ -1,9 +1,11 @@
+import type { ReactNode } from 'react';
 import { ToggleGroup, ToggleGroupItem } from '#/components/ui/toggle-group.tsx';
 import { cn } from '#/lib/utils.ts';
 
 export interface ChoiceOption<T> {
   value: T;
   label: string;
+  icon?: ReactNode;
 }
 
 export interface ChoiceGroupProps<T extends string | number> {
@@ -45,6 +47,7 @@ export function ChoiceGroup<T extends string | number>({
           key={String(option.value)}
           value={String(option.value)}
           className="rounded-full px-3 tabular-nums">
+          {option.icon}
           {option.label}
         </ToggleGroupItem>
       ))}

@@ -24,6 +24,8 @@
     "quran:fetch": "bun scripts/fetch-quran.ts",
     "seo:generate": "bun scripts/seo-files.ts",
     "pwa:splash": "bun scripts/pwa-splash.ts",
+    "duas:fetch": "bun scripts/fetch-duas.ts",
+    "hadith:fetch": "bun scripts/fetch-hadith.ts",
     "ui": "bunx shadcn@latest"
   },
   "dependencies": {

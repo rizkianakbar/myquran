@@ -16,7 +16,11 @@ const CHROME = process.env.CHROME_PATH ?? '/Applications/Google Chrome.app/Conte
 const PORT = 9335;
 const PUBLIC = join(import.meta.dirname, '../public');
 
-const splashPage = `<!doctype html><style>${SPLASH_CSS}#splash{display:grid}</style><div id="splash">${SPLASH_STAR}</div>`;
+// The viewport tag matters: without it a mobile page lays out 980px wide and
+// shrinks to fit, which drew the star at ~40% of the size the app paints it.
+const VIEWPORT = '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">';
+
+const splashPage = `<!doctype html>${VIEWPORT}<style>${SPLASH_CSS}#splash{display:grid}</style><div id="splash">${SPLASH_STAR}</div>`;
 
 /**
  * The icon: the star on the splash ground, inset by `inset` of the size,
@@ -27,7 +31,7 @@ function iconPage(inset: number, radius: string) {
     'drop-shadow',
     'none',
   );
-  return `<!doctype html><style>${SPLASH_CSS}html,body{margin:0;height:100%;background:transparent}#splash{display:grid;border-radius:${radius};padding:${inset * 100}%}#splash svg{filter:none}</style><div id="splash">${star}</div>`;
+  return `<!doctype html>${VIEWPORT}<style>${SPLASH_CSS}html,body{margin:0;height:100%;background:transparent}#splash{display:grid;border-radius:${radius};padding:${inset * 100}%}#splash svg{filter:none}</style><div id="splash">${star}</div>`;
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

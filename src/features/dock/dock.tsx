@@ -47,10 +47,11 @@ export function Dock() {
     <div
       inert={hidden}
       className={cn(
-        'dark pointer-events-none fixed inset-x-0 bottom-[calc(0.875rem+env(safe-area-inset-bottom))] z-50 flex flex-col items-center px-3 transition-[translate,opacity,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
-        // Fades with a short drift and never reaches the screen edge: iOS Safari paints a
-        // solid strip under its toolbar for a fixed bar touching the bottom edge, and keeps
-        // it until reload. `invisible` (applied after the fade) takes it out entirely.
+        // Only as wide as the pill, never a full-width box: iOS Safari takes a fixed element
+        // spanning the bottom of the screen for a toolbar and paints a solid strip under its
+        // own toolbar (kept until reload), cutting the page short.
+        'dark pointer-events-none fixed bottom-[calc(0.875rem+env(safe-area-inset-bottom))] left-1/2 z-50 flex w-max max-w-[calc(100vw-1.5rem)] -translate-x-1/2 flex-col items-center transition-[translate,opacity,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
+        // A fade with a short drift that never reaches the screen edge; `invisible` once faded.
         hidden && 'invisible translate-y-3 opacity-0',
       )}>
       <ReturnChip />

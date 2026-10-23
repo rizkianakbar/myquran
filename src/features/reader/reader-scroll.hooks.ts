@@ -54,7 +54,7 @@ export function useScrollPosition(main: React.RefObject<HTMLElement | null>, sur
 }
 
 /**
- * Travel the reader's own gesture must cover before the bars react. Hiding
+ * Travel the reader's own scroll must cover before the bars react. Hiding
  * waits for a deliberate scroll down; showing reacts to the slightest pull up.
  */
 const HIDE_AFTER_PX = 24;
@@ -65,24 +65,30 @@ const SHOW_AFTER_PX = 6;
  */
 const TOP_ZONE_PX = 80;
 
-const KEY_STEP: Record<string, number> = {
-  ArrowDown: 40,
-  ArrowUp: -40,
-  PageDown: 400,
-  PageUp: -400,
-  ' ': 400,
-  End: 400,
-  Home: -400,
+/**
+ * A gesture's momentum has ended once the page stops scrolling this long.
+ */
+const SETTLE_MS = 150;
+
+const KEY_DIRECTION: Record<string, 1 | -1> = {
+  ArrowDown: 1,
+  PageDown: 1,
+  End: 1,
+  ' ': 1,
+  ArrowUp: -1,
+  PageUp: -1,
+  Home: -1,
 };
 
 /**
  * Phones: hide the bars while the reader scrolls down, and bring them back on
  * any pull up, near the top, or at the end of the page.
  *
- * Direction comes from the reader's input (finger, wheel, keys), not from
- * scroll offsets: the offset also moves when cards above the screen settle to
- * their real height, during follow-along, and through iOS momentum, and
- * reading those as gestures made the bars flicker or refuse to come back.
+ * The reader's input (finger, wheel, keys) decides the direction; the scroll
+ * offset, counted only while it moves that way, decides the distance. So a
+ * fast flick counts its momentum too, while offset changes the reader didn't
+ * make (cards above settling to their real height, follow-along, restoring a
+ * position) leave the bars alone.
  */
 export function useHideChromeOnScroll(main: React.RefObject<HTMLElement | null>) {
   const isPhone = useIsPhone();
@@ -90,17 +96,25 @@ export function useHideChromeOnScroll(main: React.RefObject<HTMLElement | null>)
   useEffect(() => {
     const root = main.current;
     if (!root || !isPhone) return;
-    // Signed distance in the current direction: + reading on, - pulling back.
+    // Direction of the reader's current gesture: 1 reading on, -1 pulling back.
+    let direction: 1 | -1 | 0 = 0;
+    // Distance travelled in that direction since it last changed.
     let travel = 0;
     let touchY: number | null = null;
+    let lastY = window.scrollY;
+    let settleTimer: ReturnType<typeof setTimeout> | undefined;
 
     const atEdge = () => window.scrollY < TOP_ZONE_PX || atPageEnd();
-    const move = (dy: number) => {
-      if (dy === 0) return;
-      if (Math.sign(dy) !== Math.sign(travel)) travel = 0;
-      travel += dy;
-      if (travel < -SHOW_AFTER_PX) chromeHiddenStore.set(false);
-      else if (travel > HIDE_AFTER_PX && !atEdge()) chromeHiddenStore.set(true);
+    const steer = (next: 1 | -1) => {
+      if (next !== direction) travel = 0;
+      direction = next;
+      clearTimeout(settleTimer);
+    };
+    const settleSoon = () => {
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(() => {
+        if (touchY === null) direction = 0;
+      }, SETTLE_MS);
     };
 
     const onTouchStart = (event: TouchEvent) => {
@@ -110,25 +124,40 @@ export function useHideChromeOnScroll(main: React.RefObject<HTMLElement | null>)
       if (touchY === null || event.touches.length !== 1) return;
       const y = event.touches[0].clientY;
       // A finger moving up scrolls the page down.
-      move(touchY - y);
+      if (y !== touchY) steer(y < touchY ? 1 : -1);
       touchY = y;
     };
     const onTouchEnd = () => {
       touchY = null;
+      // Keep the direction through the flick's momentum.
+      settleSoon();
     };
-    const onWheel = (event: WheelEvent) => move(event.deltaMode === 1 ? event.deltaY * 16 : event.deltaY);
+    const onWheel = (event: WheelEvent) => {
+      if (event.deltaY === 0) return;
+      steer(event.deltaY > 0 ? 1 : -1);
+      settleSoon();
+    };
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       if (target?.closest('input, textarea, [contenteditable], [role="dialog"]')) return;
-      const step = KEY_STEP[event.key];
-      if (step) move(event.key === ' ' && event.shiftKey ? -step : step);
+      const step = KEY_DIRECTION[event.key];
+      if (!step) return;
+      steer(event.key === ' ' && event.shiftKey ? -1 : step);
+      settleSoon();
     };
-    // Offsets are only trusted for the edges, where the bars always return.
     const onScroll = () => {
+      const y = window.scrollY;
+      const delta = y - lastY;
+      lastY = y;
       if (atEdge()) {
         travel = 0;
-        chromeHiddenStore.set(false);
+        return chromeHiddenStore.set(false);
       }
+      if (direction === 0 || Math.sign(delta) !== direction) return;
+      travel += Math.abs(delta);
+      if (direction < 0 && travel > SHOW_AFTER_PX) chromeHiddenStore.set(false);
+      if (direction > 0 && travel > HIDE_AFTER_PX) chromeHiddenStore.set(true);
+      if (touchY === null) settleSoon();
     };
 
     // Touch and wheel on the reader only: scrolling a sheet must not hide the dock.
@@ -140,6 +169,7 @@ export function useHideChromeOnScroll(main: React.RefObject<HTMLElement | null>)
     window.addEventListener('keydown', onKey);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
+      clearTimeout(settleTimer);
       root.removeEventListener('touchstart', onTouchStart);
       root.removeEventListener('touchmove', onTouchMove);
       root.removeEventListener('touchend', onTouchEnd);

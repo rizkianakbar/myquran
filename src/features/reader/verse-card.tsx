@@ -1,9 +1,10 @@
 import { type KeyboardEvent, memo, useState } from 'react';
-import { isSajdah, MarginMarker, SajdahNote } from '#/components/ornament/marginalia.tsx';
+import { MarginMarker, SajdahNote } from '#/components/ornament/marginalia.tsx';
 import { toggleVerse } from '#/features/audio/audio.lib.ts';
 import { NoteEditor } from '#/features/notes/note-editor.tsx';
 import { TafsirPanel } from '#/features/tafsir/tafsir-panel.tsx';
 import type { Language } from '#/lib/prefs.ts';
+import { isSajdah } from '#/lib/quran/sajdah.ts';
 import type { Verse } from '#/lib/quran/types.ts';
 import { useCopyVerseLink, useLazyDrawer } from './verse-card.hooks.ts';
 import { VerseActions } from './verse-card-actions.tsx';

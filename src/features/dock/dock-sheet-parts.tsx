@@ -21,11 +21,6 @@ export function SheetContent({ view }: { view: DockView }) {
   return <SurahList />;
 }
 
-export function useSheetTitles(): Record<DockView, string> {
-  const t = useT();
-  return { surahs: t.surahs, search: t.search, journal: t.journal, shortcuts: t.shortcuts };
-}
-
 export function StarMark() {
   return (
     <svg viewBox="0 0 20 20" aria-hidden="true" className="size-4 shrink-0 text-gold">

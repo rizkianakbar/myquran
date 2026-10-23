@@ -3,7 +3,8 @@ import { usePlayer } from '#/features/audio/audio.hooks.ts';
 import { useT } from '#/lib/i18n.ts';
 import { closeDock, type DockView } from '#/lib/prefs.ts';
 import { cn } from '#/lib/utils.ts';
-import { CloseButton, SheetContent, StarMark, useSheetTitles } from './dock-sheet-parts.tsx';
+import { useSheetTitles } from './dock.hooks.ts';
+import { CloseButton, SheetContent, StarMark } from './dock-sheet-parts.tsx';
 
 /**
  * Larger screens: a sheet that grows out of the dock, rather than a sidebar

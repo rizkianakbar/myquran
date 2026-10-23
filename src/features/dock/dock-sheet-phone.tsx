@@ -3,7 +3,8 @@ import { Drawer, DrawerContent, DrawerTitle } from '#/components/ui/drawer.tsx';
 import { useVisualViewport } from '#/hooks/use-visual-viewport.ts';
 import { onIdle } from '#/lib/idle.ts';
 import { closeDock, type DockView } from '#/lib/prefs.ts';
-import { AfterFirstFrame, CloseButton, SheetContent, StarMark, useSheetTitles } from './dock-sheet-parts.tsx';
+import { useSheetTitles } from './dock.hooks.ts';
+import { AfterFirstFrame, CloseButton, SheetContent, StarMark } from './dock-sheet-parts.tsx';
 
 /**
  * Phones: a swipeable bottom drawer. It stays mounted once opened, so

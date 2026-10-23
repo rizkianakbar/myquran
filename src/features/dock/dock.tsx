@@ -47,7 +47,7 @@ export function Dock() {
     <div
       inert={hidden}
       className={cn(
-        'dark pointer-events-none fixed inset-x-0 bottom-[calc(0.875rem+env(safe-area-inset-bottom))] z-50 flex flex-col items-center px-3 transition-[translate,opacity] duration-300 ease-out',
+        'dark pointer-events-none fixed inset-x-0 bottom-[calc(0.875rem+env(safe-area-inset-bottom))] z-50 flex flex-col items-center px-3 transition-[translate,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
         // Past the bottom edge, with room for the medallion that rises above the bar.
         hidden && 'translate-y-[calc(100%+2.5rem+env(safe-area-inset-bottom))] opacity-0',
       )}>

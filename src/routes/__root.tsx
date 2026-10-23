@@ -27,7 +27,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       meta: [
         { charSet: 'utf-8' },
         // resizes-content: Android shrinks the page for the keyboard instead of covering it.
-        { name: 'viewport', content: 'width=device-width, initial-scale=1, interactive-widget=resizes-content' },
+        // viewport-fit=cover: the page runs under iOS Safari's toolbar and the home indicator
+        // instead of stopping above them; bottom-anchored UI pads itself with safe-area insets.
+        {
+          name: 'viewport',
+          content: 'width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content',
+        },
         ...page.meta,
         { name: 'theme-color', content: '#1b2a4e' },
       ],

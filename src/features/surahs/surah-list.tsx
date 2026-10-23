@@ -81,7 +81,7 @@ export function SurahList() {
 
                 <span className="block truncate text-xs text-muted-foreground">
                   {chapterTranslatedName(chapter, language)}
-                  <span className="ml-2 opacity-70">{t.verses(chapter.versesCount)}</span>
+                  <span className="ml-2">{t.verses(chapter.versesCount)}</span>
                 </span>
 
                 {read > 0 && (

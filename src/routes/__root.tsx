@@ -5,6 +5,7 @@ import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanst
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 import type { ReactNode } from 'react';
 import { AppShell } from '#/components/app-shell.tsx';
+import { arabicFontFiles, criticalFontFiles } from '#/lib/fonts.ts';
 import { pageHead } from '#/lib/seo.ts';
 import appCss from '#/styles.css?url';
 
@@ -15,8 +16,9 @@ export interface RouterContext {
 /**
  * Applies the saved theme before first paint so dark-mode readers don't get
  * a white flash while the app boots. Mirrors `useApplyPrefs` in app-shell.
+ * It also preloads the reader's chosen Arabic font, which only the prefs know.
  */
-const themeScript = `try{var p=JSON.parse(localStorage.getItem('quran:prefs')||'{}'),t=p.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),r=document.documentElement;r.dataset.theme=t;r.classList.toggle('dark',t==='dark'||t==='night')}catch(e){}`;
+const prefsScript = `try{var p=JSON.parse(localStorage.getItem('quran:prefs')||'{}'),t=p.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),r=document.documentElement;r.dataset.theme=t;r.classList.toggle('dark',t==='dark'||t==='night');var f=${JSON.stringify(arabicFontFiles)}[p.arabicFont]||${JSON.stringify(arabicFontFiles.amiri)},l=document.createElement('link');l.rel='preload';l.as='font';l.type='font/woff2';l.crossOrigin='';l.href=f;document.head.appendChild(l)}catch(e){}`;
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   // Child routes render on the client only, so their head() never reaches
@@ -38,12 +40,20 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       ],
       links: [
         { rel: 'stylesheet', href: appCss },
+        // Fonts need `crossorigin` even same-origin, or the preload goes unused.
+        ...criticalFontFiles.map((href) => ({
+          rel: 'preload',
+          as: 'font',
+          type: 'font/woff2',
+          crossOrigin: 'anonymous' as const,
+          href,
+        })),
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' },
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
         ...page.links,
       ],
-      scripts: [{ children: themeScript }, ...page.scripts],
+      scripts: [{ children: prefsScript }, ...page.scripts],
     };
   },
   shellComponent: RootDocument,

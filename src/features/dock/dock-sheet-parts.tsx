@@ -1,16 +1,26 @@
 import { X } from 'lucide-react';
-import { type ReactNode, useEffect, useState } from 'react';
+import { lazy, type ReactNode, Suspense, useEffect, useState } from 'react';
 import { starOutline } from '#/components/ornament/geometry.ts';
 import { ShortcutList } from '#/components/shortcut-list.tsx';
-import { JournalPanel } from '#/features/journal/journal-panel.tsx';
 import { SearchPanel } from '#/features/search/search-panel.tsx';
 import { SurahList } from '#/features/surahs/surah-list.tsx';
 import { useT } from '#/lib/i18n.ts';
 import { closeDock, type DockView } from '#/lib/prefs.ts';
 
+// Split out so its Better Auth client stays off the home page's critical path.
+const JournalPanel = lazy(() =>
+  import('#/features/journal/journal-panel.tsx').then((m) => ({ default: m.JournalPanel })),
+);
+
 export function SheetContent({ view }: { view: DockView }) {
   if (view === 'search') return <SearchPanel />;
-  if (view === 'journal') return <JournalPanel />;
+  if (view === 'journal') {
+    return (
+      <Suspense fallback={null}>
+        <JournalPanel />
+      </Suspense>
+    );
+  }
   if (view === 'shortcuts') {
     return (
       <div className="min-h-0 grow overflow-y-auto overscroll-contain px-6 py-5">

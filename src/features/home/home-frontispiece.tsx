@@ -26,7 +26,7 @@ export function HomeFrontispiece() {
 
           {isError && <p className="mt-6 text-sm text-destructive">{t.dataMissing}</p>}
 
-          <div className="mt-6 flex flex-wrap items-center gap-3 sm:mt-8">
+          <div className="mt-6 flex flex-col md:items-center items-start gap-3 sm:mt-8 md:flex-row">
             {resume && lastRead ? (
               <Link
                 to="/surah/$surah"

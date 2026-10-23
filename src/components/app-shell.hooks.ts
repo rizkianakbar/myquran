@@ -104,11 +104,22 @@ export function useGlobalShortcuts() {
 
 /**
  * Register the service worker once the page has settled, so installing it
- * (which downloads the app's files) never competes with the first load.
+ * (which downloads the app's files, ~1.3 MB) never competes with the first
+ * load. A first install waits for a fast, unmetered connection, like the
+ * surah prefetch; a worker already installed always registers, since that
+ * is also how it finds updates.
  */
 export function useServiceWorker() {
   useEffect(
-    () => onIdle(() => void registerServiceWorker().catch(() => {}), { timeout: 5000, fallbackDelay: 3000 }),
+    () =>
+      onIdle(
+        () => {
+          const installed = !!navigator.serviceWorker?.controller;
+          if (!installed && onSlowOrMeteredConnection()) return;
+          void registerServiceWorker().catch(() => {});
+        },
+        { timeout: 5000, fallbackDelay: 3000 },
+      ),
     [],
   );
 }

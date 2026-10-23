@@ -13,12 +13,15 @@ export const SPLASH_STAR = `<svg viewBox="0 0 64 64" width="112" height="112" ar
  * `standalone` class the theme script in `__root.tsx` sets from Safari's
  * `navigator.standalone` (iOS doesn't always report the display mode).
  * A flat ground, not a gradient: iOS launch images must be PNG, and a
- * gradient makes each one ~1 MB. Leaving: the
+ * gradient makes each one ~1 MB. On iOS the page starts below the status
+ * bar but the launch image fills the screen, so the splash reaches up by
+ * the bar's height (`--splash-shift`, measured in `__root.tsx`) to centre
+ * the star on the screen, exactly where the launch image has it. Leaving: the
  * ground fades while the star drifts larger and fades a little sooner, like
  * a native launch, then the whole layer stops hit-testing and painting.
  */
 export const SPLASH_CSS = `
-#splash{position:fixed;inset:0;z-index:100;display:none;place-items:center;background:#1b2a4e}
+#splash{position:fixed;inset:0;top:calc(-1*var(--splash-shift,0px));z-index:100;display:none;place-items:center;background:#1b2a4e}
 #splash svg{filter:drop-shadow(0 0 28px rgb(212 169 74/.28))}
 @media (display-mode:standalone){#splash{display:grid}}
 .standalone #splash{display:grid}

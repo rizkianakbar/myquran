@@ -20,8 +20,10 @@ export interface RouterContext {
  * a white flash while the app boots. Mirrors `useApplyPrefs` in app-shell.
  * It also preloads the reader's chosen Arabic font, which only the prefs know,
  * and marks the installed app (`standalone`) so its splash shows from the first frame.
+ * On iOS it also measures the status bar the page starts below (`--splash-shift`), so
+ * the splash centres on the screen like the launch image does.
  */
-const prefsScript = `try{var p=JSON.parse(localStorage.getItem('quran:prefs')||'{}'),t=p.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),r=document.documentElement;r.dataset.theme=t;r.classList.toggle('dark',t==='dark'||t==='night');if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)r.classList.add('standalone');var f=${JSON.stringify(arabicFontFiles)}[p.arabicFont]||${JSON.stringify(arabicFontFiles.amiri)},l=document.createElement('link');l.rel='preload';l.as='font';l.type='font/woff2';l.crossOrigin='';l.href=f;document.head.appendChild(l)}catch(e){}`;
+const prefsScript = `try{var p=JSON.parse(localStorage.getItem('quran:prefs')||'{}'),t=p.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),r=document.documentElement;r.dataset.theme=t;r.classList.toggle('dark',t==='dark'||t==='night');if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)r.classList.add('standalone');if(navigator.standalone)r.style.setProperty('--splash-shift',Math.max(0,screen.height-innerHeight)+'px');var f=${JSON.stringify(arabicFontFiles)}[p.arabicFont]||${JSON.stringify(arabicFontFiles.amiri)},l=document.createElement('link');l.rel='preload';l.as='font';l.type='font/woff2';l.crossOrigin='';l.href=f;document.head.appendChild(l)}catch(e){}`;
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   // Child routes render on the client only, so their head() never reaches

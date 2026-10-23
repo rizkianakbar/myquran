@@ -117,12 +117,15 @@ export function useHideChromeOnScroll(main: React.RefObject<HTMLElement | null>)
       }, SETTLE_MS);
     };
 
+    // Screen coordinates, not client ones: iOS scrolls off the main thread, and
+    // during a quick swipe clientY is computed against a stale scroll offset,
+    // so it barely moves (or moves backwards) and the direction is lost.
     const onTouchStart = (event: TouchEvent) => {
-      touchY = event.touches.length === 1 ? event.touches[0].clientY : null;
+      touchY = event.touches.length === 1 ? event.touches[0].screenY : null;
     };
     const onTouchMove = (event: TouchEvent) => {
       if (touchY === null || event.touches.length !== 1) return;
-      const y = event.touches[0].clientY;
+      const y = event.touches[0].screenY;
       // A finger moving up scrolls the page down.
       if (y !== touchY) steer(y < touchY ? 1 : -1);
       touchY = y;
@@ -153,6 +156,9 @@ export function useHideChromeOnScroll(main: React.RefObject<HTMLElement | null>)
         travel = 0;
         return chromeHiddenStore.set(false);
       }
+      // A finger on the page whose move events haven't arrived yet: the scroll
+      // itself says which way it is going.
+      if (direction === 0 && touchY !== null && delta !== 0) steer(delta > 0 ? 1 : -1);
       if (direction === 0 || Math.sign(delta) !== direction) return;
       travel += Math.abs(delta);
       if (direction < 0 && travel > SHOW_AFTER_PX) chromeHiddenStore.set(false);

@@ -1,5 +1,6 @@
 import { queryOptions } from '@tanstack/react-query';
 import type { Dua, DuaIndex } from './duas.types.ts';
+import duaIndex from './duas-index.json' with { type: 'json' };
 
 /**
  * Static JSON under /duas (built by `bun duas:fetch`); small, and kept
@@ -15,7 +16,7 @@ export const duaQueries = {
   index: () =>
     queryOptions({
       queryKey: ['duas', 'index'],
-      queryFn: () => getJson<DuaIndex>('/duas/index.json'),
+      queryFn: () => Promise.resolve(duaIndex as DuaIndex),
       staleTime: Number.POSITIVE_INFINITY,
     }),
   category: (slug: string) =>

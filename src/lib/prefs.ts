@@ -57,7 +57,8 @@ const prefersDark = typeof matchMedia !== 'undefined' && matchMedia('(prefers-co
 
 export const prefsStore = createStore<Prefs>(
   {
-    language: typeof navigator !== 'undefined' && navigator.language.startsWith('id') ? 'id' : 'en',
+    // Optional chaining: some server runtimes (Bun) have a navigator without a language.
+    language: typeof navigator !== 'undefined' && navigator.language?.startsWith('id') ? 'id' : 'en',
     theme: prefersDark ? 'dark' : 'light',
     arabicFont: 'amiri',
     arabicSize: 2,

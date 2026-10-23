@@ -3,19 +3,21 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { type DuaHit, searchDuas } from '#/features/duas/duas.lib.ts';
 import type { Dua, DuaIndex } from '#/features/duas/duas.types.ts';
+import duaIndexJson from '#/features/duas/duas-index.json' with { type: 'json' };
 import { searchHadith } from '#/features/hadith/hadith.lib.ts';
 import type { HadithIndex } from '#/features/hadith/hadith.types.ts';
+import hadithIndexJson from '#/features/hadith/hadith-index.json' with { type: 'json' };
 import { matchesAll, parseQuery } from './search.lib.ts';
 
 // The real collections from `public/` (`bun duas:fetch`, `bun hadith:fetch`), so these
 // tests prove the searches people actually type.
 const read = <T>(path: string): T =>
   JSON.parse(readFileSync(join(import.meta.dirname, '../../../public', path), 'utf8'));
-const duaIndex = read<DuaIndex>('duas/index.json');
+const duaIndex = duaIndexJson as DuaIndex;
 const duas: DuaHit[] = duaIndex.categories.flatMap((c) =>
   read<Dua[]>(`duas/${c.slug}.json`).map((dua) => ({ dua, category: c.slug })),
 );
-const hadithIndex = read<HadithIndex>('hadith/index.json');
+const hadithIndex = hadithIndexJson as HadithIndex;
 
 describe('parseQuery', () => {
   it('takes "doa" or "hadis" as what is wanted, the rest as what about', () => {

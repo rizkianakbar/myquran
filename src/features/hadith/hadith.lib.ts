@@ -2,6 +2,13 @@ import { matchesAll, normalizeArabic, type ParsedQuery } from '#/features/search
 import type { Hadith, HadithBook, HadithCollection } from './hadith.types.ts';
 
 /**
+ * hadith-api on jsDelivr (public domain): CORS-open, cached a week, and
+ * served a book ("section") at a time. Pinned to the major version, so its
+ * shape can't change under us.
+ */
+export const HADITH_CDN = 'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1';
+
+/**
  * Each collection's name in Arabic, set in Kufi beside its English one.
  */
 export const ARABIC_COLLECTION_NAMES: Record<string, string> = {

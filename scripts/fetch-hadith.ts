@@ -1,6 +1,8 @@
 /**
- * Builds `public/hadith/index.json`: each collection's books and which
- * translations it has. The hadith themselves stay on the source's CDN and
+ * Builds `src/features/hadith/hadith-index.json`: each collection's books and
+ * which translations it has. Bundled, not under public/, because the server
+ * names books in page titles (and Vite won't import from public/). The
+ * hadith themselves stay on the source's CDN and
  * load a book at a time (see `src/features/hadith/hadith.api.ts`); every
  * collection in three languages would add 100+ MB to the repo.
  *
@@ -9,12 +11,12 @@
  *
  * Usage: `bun hadith:fetch`
  */
-import { mkdir, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { HADITH_CDN } from '#/features/hadith/hadith.api.ts';
+import { HADITH_CDN } from '#/features/hadith/hadith.lib.ts';
 import type { HadithCollection, HadithIndex } from '#/features/hadith/hadith.types.ts';
 
-const OUT_DIR = join(import.meta.dirname, '../public/hadith');
+const OUT_PATH = join(import.meta.dirname, '../src/features/hadith/hadith-index.json');
 
 /**
  * The collections offered, in order: the short curated forties first, then
@@ -45,7 +47,6 @@ async function getJson<T>(url: string): Promise<T> {
 }
 
 async function main() {
-  await mkdir(OUT_DIR, { recursive: true });
   const [info, editions] = await Promise.all([
     getJson<Record<string, { metadata: Metadata; hadiths: { hadithnumber: number }[] }>>(`${HADITH_CDN}/info.min.json`),
     getJson<Record<string, { collection: { name: string }[] }>>(`${HADITH_CDN}/editions.min.json`),
@@ -78,7 +79,7 @@ async function main() {
   });
 
   const index: HadithIndex = { collections };
-  await writeFile(join(OUT_DIR, 'index.json'), JSON.stringify(index));
+  await writeFile(OUT_PATH, JSON.stringify(index));
   console.log(`Done — ${collections.length} collections, ${collections.reduce((n, c) => n + c.books.length, 0)} books`);
 }
 

@@ -1,7 +1,8 @@
 /**
- * Downloads the dua and dhikr collection into `public/duas/` as static JSON:
- * `index.json` (the categories) and one file per category, each entry in
- * English and Indonesian together.
+ * Downloads the dua and dhikr collection: one static JSON file per category
+ * in `public/duas/`, each entry in English and Indonesian together, and the
+ * category list in `src/features/duas/duas-index.json` (bundled: the server
+ * names categories in page titles).
  *
  * Source: Dua & Dhikr by Fitrahive (MIT), https://github.com/fitrahive/dua-dhikr
  *
@@ -13,6 +14,7 @@ import type { Dua, DuaCategory, DuaIndex } from '#/features/duas/duas.types.ts';
 
 const SOURCE = 'https://raw.githubusercontent.com/fitrahive/dua-dhikr/main/data';
 const OUT_DIR = join(import.meta.dirname, '../public/duas');
+const INDEX_PATH = join(import.meta.dirname, '../src/features/duas/duas-index.json');
 /**
  * The order the categories are offered in: the daily rhythm first.
  */
@@ -67,7 +69,7 @@ async function main() {
   }
 
   const index: DuaIndex = { categories };
-  await writeFile(join(OUT_DIR, 'index.json'), JSON.stringify(index));
+  await writeFile(INDEX_PATH, JSON.stringify(index));
   console.log(`Done — ${categories.reduce((n, c) => n + c.count, 0)} duas in ${categories.length} categories`);
 }
 

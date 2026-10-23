@@ -20,7 +20,6 @@ function Shell({ title, children }: { title: string; children: React.ReactNode }
   const t = useT();
   return (
     <main id="main-content" className="min-w-0 grow">
-      <title>{`${title} · ${t.appName}`}</title>
       <div className="mx-auto max-w-2xl px-4 pt-2 pb-40 sm:px-6 sm:pt-10">
         <PageHeader title={title} />
         <div className="mt-6">{children}</div>

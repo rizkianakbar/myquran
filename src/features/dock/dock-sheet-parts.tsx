@@ -2,18 +2,30 @@ import { X } from 'lucide-react';
 import { lazy, type ReactNode, Suspense, useEffect, useState } from 'react';
 import { starOutline } from '#/components/ornament/geometry.ts';
 import { ShortcutList } from '#/components/shortcut-list.tsx';
-import { SearchPanel } from '#/features/search/search-panel.tsx';
 import { SurahList } from '#/features/surahs/surah-list.tsx';
 import { useT } from '#/lib/i18n.ts';
+import { onIdle } from '#/lib/idle.ts';
 import { closeDock, type DockView } from '#/lib/prefs.ts';
 
 // Split out so its Better Auth client stays off the home page's critical path.
+// Split out so search (the Quran index client, duas, hadith) stays off the first
+// load. Fetched once the page is idle, so opening search is still instant.
+const loadSearch = () => import('#/features/search/search-panel.tsx');
+const SearchPanel = lazy(() => loadSearch().then((m) => ({ default: m.SearchPanel })));
+if (typeof window !== 'undefined') onIdle(() => void loadSearch(), { timeout: 6000, fallbackDelay: 3000 });
+
 const JournalPanel = lazy(() =>
   import('#/features/journal/journal-panel.tsx').then((m) => ({ default: m.JournalPanel })),
 );
 
 export function SheetContent({ view }: { view: DockView }) {
-  if (view === 'search') return <SearchPanel />;
+  if (view === 'search') {
+    return (
+      <Suspense fallback={null}>
+        <SearchPanel />
+      </Suspense>
+    );
+  }
   if (view === 'journal') {
     return (
       <Suspense fallback={null}>

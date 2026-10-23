@@ -12,7 +12,10 @@ Package manager is Bun (`bun.lock`); all commands are `package.json` scripts. Th
 - `bun db:generate` — SQL migration from schema changes into `drizzle/` · `bun db:migrate` · `bun db:push` (prototyping) · `bun db:studio` (port 4444)
 - `bun db:seed` — truncate and reseed (`test@example.com` / `password123`, plus a few bookmarks/notes)
 - `bun quran:fetch` — download Quran content into `public/quran/`
-- `bun seo:generate` — regenerate `public/sitemap.xml` and `public/robots.txt` from `SITE_URL` in `src/lib/seo.ts`
+- `bun duas:fetch` — download duas into `public/duas/` (category list bundled in `src/features/duas/duas-index.json`)
+- `bun hadith:fetch` — rebuild `src/features/hadith/hadith-index.json` (hadith text loads from the hadith-api CDN a book at a time)
+- `bun pwa:splash` — render the PWA icons and iOS launch images with local Chrome
+- `bun seo:generate` — regenerate `public/sitemap.xml` (home, surahs, duas, hadith) and `public/robots.txt`; rerun after fetching duas or hadith
 
 Single test file: `bun vitest run src/server/annotations.test.ts`.
 

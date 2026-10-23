@@ -65,3 +65,22 @@ export const CATEGORY_ARABIC: Record<string, string> = {
   'daily-dua': 'أدعية يومية',
   'selected-dua': 'أدعية مختارة',
 };
+
+/**
+ * Each category's URL, in Indonesian as people search for it ("dzikir pagi",
+ * "doa harian"): `/duas/dzikir-pagi`.
+ */
+export const DUA_URL_SLUGS: Record<string, string> = {
+  'morning-dhikr': 'dzikir-pagi',
+  'evening-dhikr': 'dzikir-petang',
+  'dhikr-after-salah': 'dzikir-setelah-shalat',
+  'daily-dua': 'doa-harian',
+  'selected-dua': 'doa-pilihan',
+};
+
+/**
+ * The category a URL slug names, or undefined for an unknown one.
+ */
+export function categoryFromUrl(urlSlug: string): string | undefined {
+  return Object.keys(DUA_URL_SLUGS).find((slug) => DUA_URL_SLUGS[slug] === urlSlug);
+}

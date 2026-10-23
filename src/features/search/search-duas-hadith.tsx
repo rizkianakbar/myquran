@@ -2,7 +2,7 @@ import { useQueries, useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { HandHeart, ScrollText } from 'lucide-react';
 import { duaQueries } from '#/features/duas/duas.api.ts';
-import { type DuaHit, searchDuas } from '#/features/duas/duas.lib.ts';
+import { DUA_URL_SLUGS, type DuaHit, searchDuas } from '#/features/duas/duas.lib.ts';
 import { hadithQueries } from '#/features/hadith/hadith.api.ts';
 import { type HadithTextHit, searchHadith } from '#/features/hadith/hadith.lib.ts';
 import { useT } from '#/lib/i18n.ts';
@@ -72,7 +72,7 @@ export function DuaResults({ results }: { results: ReturnType<typeof useDuaHadit
       <ul>
         {results.browseDuas.map((c) => (
           <li key={c.slug}>
-            <Link to="/duas" search={{ category: c.slug }} className={row}>
+            <Link to="/duas/$category" params={{ category: DUA_URL_SLUGS[c.slug] }} className={row}>
               <span className="font-serif text-base">{c.name[language]}</span>
               <span className="ml-2 text-xs text-muted-foreground tabular-nums">{c.count}</span>
             </Link>
@@ -80,7 +80,7 @@ export function DuaResults({ results }: { results: ReturnType<typeof useDuaHadit
         ))}
         {results.duas.map(({ dua, category }) => (
           <li key={dua.id}>
-            <Link to="/duas" search={{ category }} hash={dua.id} className={row}>
+            <Link to="/duas/$category" params={{ category: DUA_URL_SLUGS[category] }} hash={dua.id} className={row}>
               <span className="block font-serif text-base">{dua.title[language]}</span>
               <span className="mt-0.5 line-clamp-2 leading-snug text-muted-foreground">
                 {dua.translation[language]}

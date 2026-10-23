@@ -79,7 +79,7 @@ export function HomeTools() {
           }
         />
       </Link>
-      <Link to="/duas" search={{}} className={tile}>
+      <Link to="/duas" className={tile}>
         <TileBody icon={<HandHeart />} label={t.duas} detail={duaDetail} />
       </Link>
       <Link to="/hadith" className={tile}>

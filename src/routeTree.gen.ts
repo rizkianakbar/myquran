@@ -10,12 +10,13 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DuasRouteImport } from './routes/duas'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MemorizeRouteImport } from './routes/memorize'
 import { Route as PrayerTimesRouteImport } from './routes/prayer-times'
 import { Route as QiblaRouteImport } from './routes/qibla'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as DuasIndexRouteImport } from './routes/duas.index'
+import { Route as DuasCategoryRouteImport } from './routes/duas.$category'
 import { Route as HadithIndexRouteImport } from './routes/hadith.index'
 import { Route as SurahSurahRouteImport } from './routes/surah.$surah'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -25,11 +26,6 @@ import { Route as HadithCollectionBookRouteImport } from './routes/hadith.$colle
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DuasRoute = DuasRouteImport.update({
-  id: '/duas',
-  path: '/duas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -55,6 +51,16 @@ const QiblaRoute = QiblaRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DuasIndexRoute = DuasIndexRouteImport.update({
+  id: '/duas/',
+  path: '/duas/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DuasCategoryRoute = DuasCategoryRouteImport.update({
+  id: '/duas/$category',
+  path: '/duas/$category',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HadithIndexRoute = HadithIndexRouteImport.update({
@@ -85,13 +91,14 @@ const HadithCollectionBookRoute = HadithCollectionBookRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/duas': typeof DuasRoute
   '/login': typeof LoginRoute
   '/memorize': typeof MemorizeRoute
   '/prayer-times': typeof PrayerTimesRoute
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
+  '/duas/$category': typeof DuasCategoryRoute
   '/surah/$surah': typeof SurahSurahRoute
+  '/duas/': typeof DuasIndexRoute
   '/hadith/': typeof HadithIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/hadith/$collection/$book': typeof HadithCollectionBookRoute
@@ -99,13 +106,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/duas': typeof DuasRoute
   '/login': typeof LoginRoute
   '/memorize': typeof MemorizeRoute
   '/prayer-times': typeof PrayerTimesRoute
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
+  '/duas/$category': typeof DuasCategoryRoute
   '/surah/$surah': typeof SurahSurahRoute
+  '/duas': typeof DuasIndexRoute
   '/hadith': typeof HadithIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/hadith/$collection/$book': typeof HadithCollectionBookRoute
@@ -114,13 +122,14 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/duas': typeof DuasRoute
   '/login': typeof LoginRoute
   '/memorize': typeof MemorizeRoute
   '/prayer-times': typeof PrayerTimesRoute
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
+  '/duas/$category': typeof DuasCategoryRoute
   '/surah/$surah': typeof SurahSurahRoute
+  '/duas/': typeof DuasIndexRoute
   '/hadith/': typeof HadithIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/hadith/$collection/$book': typeof HadithCollectionBookRoute
@@ -130,13 +139,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/duas'
     | '/login'
     | '/memorize'
     | '/prayer-times'
     | '/qibla'
     | '/settings'
+    | '/duas/$category'
     | '/surah/$surah'
+    | '/duas/'
     | '/hadith/'
     | '/api/auth/$'
     | '/hadith/$collection/$book'
@@ -144,13 +154,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/duas'
     | '/login'
     | '/memorize'
     | '/prayer-times'
     | '/qibla'
     | '/settings'
+    | '/duas/$category'
     | '/surah/$surah'
+    | '/duas'
     | '/hadith'
     | '/api/auth/$'
     | '/hadith/$collection/$book'
@@ -158,13 +169,14 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/duas'
     | '/login'
     | '/memorize'
     | '/prayer-times'
     | '/qibla'
     | '/settings'
+    | '/duas/$category'
     | '/surah/$surah'
+    | '/duas/'
     | '/hadith/'
     | '/api/auth/$'
     | '/hadith/$collection/$book'
@@ -173,13 +185,14 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DuasRoute: typeof DuasRoute
   LoginRoute: typeof LoginRoute
   MemorizeRoute: typeof MemorizeRoute
   PrayerTimesRoute: typeof PrayerTimesRoute
   QiblaRoute: typeof QiblaRoute
   SettingsRoute: typeof SettingsRoute
+  DuasCategoryRoute: typeof DuasCategoryRoute
   SurahSurahRoute: typeof SurahSurahRoute
+  DuasIndexRoute: typeof DuasIndexRoute
   HadithIndexRoute: typeof HadithIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   HadithCollectionBookRoute: typeof HadithCollectionBookRoute
@@ -193,13 +206,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/duas': {
-      id: '/duas'
-      path: '/duas'
-      fullPath: '/duas'
-      preLoaderRoute: typeof DuasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -235,6 +241,20 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/duas/': {
+      id: '/duas/'
+      path: '/duas'
+      fullPath: '/duas/'
+      preLoaderRoute: typeof DuasIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/duas/$category': {
+      id: '/duas/$category'
+      path: '/duas/$category'
+      fullPath: '/duas/$category'
+      preLoaderRoute: typeof DuasCategoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/hadith/': {
@@ -277,13 +297,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DuasRoute: DuasRoute,
   LoginRoute: LoginRoute,
   MemorizeRoute: MemorizeRoute,
   PrayerTimesRoute: PrayerTimesRoute,
   QiblaRoute: QiblaRoute,
   SettingsRoute: SettingsRoute,
+  DuasCategoryRoute: DuasCategoryRoute,
   SurahSurahRoute: SurahSurahRoute,
+  DuasIndexRoute: DuasIndexRoute,
   HadithIndexRoute: HadithIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   HadithCollectionBookRoute: HadithCollectionBookRoute,

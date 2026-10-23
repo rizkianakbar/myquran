@@ -1,12 +1,7 @@
 import { queryOptions } from '@tanstack/react-query';
+import { HADITH_CDN } from './hadith.lib.ts';
 import type { Hadith, HadithBookContent, HadithGrade, HadithIndex } from './hadith.types.ts';
-
-/**
- * hadith-api on jsDelivr (public domain): CORS-open, cached a week, and
- * served a book ("section") at a time. Pinned to the major version, so its
- * shape can't change under us.
- */
-export const HADITH_CDN = 'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1';
+import hadithIndex from './hadith-index.json' with { type: 'json' };
 
 interface SourceHadith {
   hadithnumber: number;
@@ -64,7 +59,7 @@ export const hadithQueries = {
   index: () =>
     queryOptions({
       queryKey: ['hadith', 'index'],
-      queryFn: () => getJson<HadithIndex>('/hadith/index.json'),
+      queryFn: () => Promise.resolve(hadithIndex as HadithIndex),
       staleTime: Number.POSITIVE_INFINITY,
     }),
   book: (collection: string, book: number, lang: 'en' | 'id') =>

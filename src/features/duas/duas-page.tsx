@@ -8,7 +8,7 @@ import { PageHeader } from '#/components/page-header.tsx';
 import { useT } from '#/lib/i18n.ts';
 import { usePrefs } from '#/lib/prefs.ts';
 import { duaQueries } from './duas.api.ts';
-import { CATEGORY_ARABIC, categoryForHour, repeatCount } from './duas.lib.ts';
+import { CATEGORY_ARABIC, categoryForHour, DUA_URL_SLUGS, repeatCount } from './duas.lib.ts';
 import { useSaidToday } from './duas.store.ts';
 import { DuaCard } from './duas-card.tsx';
 
@@ -21,9 +21,11 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 };
 
 /**
- * Duas and adhkar by occasion, opening on the one for the time of day, with
- * how many have been said today. `?category=` keeps the choice in the URL;
- * a `#dua-id` (from search) scrolls to that dua once it has loaded.
+ * Duas and adhkar by occasion, with how many have been said today. Each
+ * category has its own URL (`/duas/dzikir-pagi`); `/duas` opens on the one
+ * for the time of day. A `#dua-id` (from search) scrolls to that dua once it
+ * has loaded. The title comes from the root head (`pageHead`), so search
+ * engines see the same one.
  */
 export function DuasPage({ category }: { category?: string }) {
   const t = useT();
@@ -46,7 +48,6 @@ export function DuasPage({ category }: { category?: string }) {
 
   return (
     <main id="main-content" className="min-w-0 grow">
-      <title>{`${t.duas} · ${t.appName}`}</title>
       <div className="mx-auto max-w-2xl px-4 pt-2 pb-40 sm:px-6 sm:pt-10">
         <PageHeader title={t.duas} />
         {current && (
@@ -55,7 +56,9 @@ export function DuasPage({ category }: { category?: string }) {
             <ChoiceGroup
               label={t.duas}
               value={current.slug}
-              onChange={(slug) => void navigate({ to: '/duas', search: { category: slug }, replace: true })}
+              onChange={(slug) =>
+                void navigate({ to: '/duas/$category', params: { category: DUA_URL_SLUGS[slug] }, replace: true })
+              }
               options={categories.map((c) => ({
                 value: c.slug,
                 label: c.name[language],

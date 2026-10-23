@@ -708,6 +708,13 @@ const id: Messages = {
 
 const messages: Record<Language, Messages> = { en, id };
 
+/**
+ * The strings for a language outside React (e.g. the server's page titles).
+ */
+export function messagesFor(language: Language): Messages {
+  return messages[language];
+}
+
 export function useT(): Messages {
   return messages[usePrefs().language];
 }

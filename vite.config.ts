@@ -4,6 +4,7 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import react from '@vitejs/plugin-react';
 import { nitro } from 'nitro/vite';
 import { defineConfig } from 'vite';
+import { pwa } from './src/features/pwa/pwa.plugin.ts';
 
 export default defineConfig({
   clearScreen: false,
@@ -24,5 +25,6 @@ export default defineConfig({
     tailwindcss(),
     tanstackStart(),
     react(),
+    pwa(),
   ],
 });

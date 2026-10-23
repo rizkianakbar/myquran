@@ -126,7 +126,7 @@ Ideas for where Noorish goes next. The rule for every one of them: **the reader 
 - [ ] **Hadith collections** (e.g. An-Nawawi's Forty, Riyad as-Salihin) with cited translations.
 - [ ] **Hijri calendar and Ramadan mode:** imsak and iftar times and a fasting tracker.
 - [ ] **Zakat calculator.**
-- [ ] **Offline and installable (PWA):** the Quran data is already static JSON.
+- [x] **Offline and installable (PWA):** the Quran data is already static JSON.
 - [ ] **Indonesian pages** at their own URLs (`/id/...`) so they can be found in search.
 
 ### Someday

@@ -50,6 +50,15 @@
           "value": "public, max-age=3600"
         }
       ]
+    },
+    {
+      "source": "/(sw.js|manifest.webmanifest)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
     }
   ]
 }

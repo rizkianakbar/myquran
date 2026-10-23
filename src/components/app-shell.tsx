@@ -2,8 +2,9 @@ import type { ReactNode } from 'react';
 import { Dock } from '#/features/dock/dock.tsx';
 import { DockSheet } from '#/features/dock/dock-sheet.tsx';
 import { usePlanSync } from '#/features/plans/plans.hooks.ts';
+import { PwaUpdatePrompt } from '#/features/pwa/pwa-update-prompt.tsx';
 import { useT } from '#/lib/i18n.ts';
-import { useApplyPrefs, useGlobalShortcuts, usePrefetchAllSurahs } from './app-shell.hooks.ts';
+import { useApplyPrefs, useGlobalShortcuts, usePrefetchAllSurahs, useServiceWorker } from './app-shell.hooks.ts';
 
 /**
  * Full-bleed pages with a floating dock instead of side rails: the reading
@@ -16,6 +17,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   useGlobalShortcuts();
   usePrefetchAllSurahs();
   usePlanSync();
+  useServiceWorker();
 
   return (
     // The document scrolls, not an inner box (see `src/lib/page-scroll.ts`). With
@@ -28,6 +30,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </a>
       <div className="relative flex min-w-0 grow">{children}</div>
       <DockSheet />
+      <PwaUpdatePrompt />
       <Dock />
     </div>
   );

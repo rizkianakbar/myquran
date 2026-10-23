@@ -2,6 +2,7 @@ import { ArrowLeft } from 'lucide-react';
 import { ShortcutList } from '#/components/shortcut-list.tsx';
 import { reciters } from '#/features/audio/audio.api.ts';
 import { play, stop } from '#/features/audio/audio.lib.ts';
+import { PwaInstallRow } from '#/features/pwa/pwa-install.tsx';
 import { useT } from '#/lib/i18n.ts';
 import {
   type ArabicFont,
@@ -184,6 +185,8 @@ export function SettingsPage() {
               ]}
             />
           </SettingsRow>
+
+          <PwaInstallRow />
 
           <section className="py-6">
             <h2 className="font-serif text-lg">{t.shortcuts}</h2>

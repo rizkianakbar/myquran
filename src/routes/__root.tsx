@@ -37,6 +37,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         },
         ...page.meta,
         { name: 'theme-color', content: '#1b2a4e' },
+        // The name under the Home Screen icon on iOS.
+        { name: 'apple-mobile-web-app-title', content: 'Noorish' },
       ],
       links: [
         { rel: 'stylesheet', href: appCss },
@@ -51,6 +53,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' },
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+        { rel: 'manifest', href: '/manifest.webmanifest' },
         ...page.links,
       ],
       scripts: [{ children: prefsScript }, ...page.scripts],

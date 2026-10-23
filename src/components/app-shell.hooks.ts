@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { skipVerse, stop, togglePause } from '#/features/audio/audio.lib.ts';
+import { registerServiceWorker } from '#/features/pwa/pwa.lib.ts';
 import { onIdle } from '#/lib/idle.ts';
 import {
   arabicFonts,
@@ -99,4 +100,15 @@ export function useGlobalShortcuts() {
     if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select')) event.target.blur();
     closeDock();
   });
+}
+
+/**
+ * Register the service worker once the page has settled, so installing it
+ * (which downloads the app's files) never competes with the first load.
+ */
+export function useServiceWorker() {
+  useEffect(
+    () => onIdle(() => void registerServiceWorker().catch(() => {}), { timeout: 5000, fallbackDelay: 3000 }),
+    [],
+  );
 }

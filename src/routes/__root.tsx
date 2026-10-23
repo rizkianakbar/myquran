@@ -5,6 +5,8 @@ import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanst
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 import type { ReactNode } from 'react';
 import { AppShell } from '#/components/app-shell.tsx';
+import { IOS_SPLASH_SCREENS } from '#/features/pwa/pwa-screens.ts';
+import { SPLASH_CSS, SPLASH_STAR } from '#/features/pwa/pwa-splash.ts';
 import { arabicFontFiles, criticalFontFiles } from '#/lib/fonts.ts';
 import { pageHead } from '#/lib/seo.ts';
 import appCss from '#/styles.css?url';
@@ -54,6 +56,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' },
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
         { rel: 'manifest', href: '/manifest.webmanifest' },
+        // iOS launch screens, one per screen size; the same art as the in-app splash.
+        ...IOS_SPLASH_SCREENS.map(({ file, media }) => ({ rel: 'apple-touch-startup-image', href: file, media })),
         ...page.links,
       ],
       scripts: [{ children: prefsScript }, ...page.scripts],
@@ -75,6 +79,10 @@ function RootDocument({ children }: { children: ReactNode }) {
       </head>
       {/* Extensions (e.g. ColorZilla's cz-shortcut-listen) add attributes to <body> before hydration. */}
       <body className="bg-background antialiased" suppressHydrationWarning>
+        {/* First frame of the installed app (see `pwa-splash.ts`); faded out by the app shell. */}
+        <style>{SPLASH_CSS}</style>
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static markup from our own constant */}
+        <div id="splash" aria-hidden="true" dangerouslySetInnerHTML={{ __html: SPLASH_STAR }} />
         {children}
         {import.meta.env.DEV && (
           <TanStackDevtools

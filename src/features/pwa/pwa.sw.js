@@ -5,8 +5,9 @@
  * - App files (hashed JS/CSS and the fonts in use): cached at install,
  *   served from the cache. Hashed names never change content, so they
  *   can't go stale.
- * - Pages: network first; offline, the saved copy (or the home shell,
- *   since every page renders on the client from the same shell).
+ * - Pages: network first, falling back after NETWORK_TIMEOUT_MS or when
+ *   offline to the saved copy (or the home shell, since every page renders
+ *   on the client from the same shell).
  * - Quran data (`/quran/*`): from the cache, refreshed in the background,
  *   kept across app versions. Opening a surah, or the idle prefetch,
  *   saves it.
@@ -18,9 +19,16 @@ const VERSION = '__VERSION__';
 const PRECACHE = __PRECACHE__;
 
 const APP_CACHE = `noorish-app-${VERSION}`;
-const PAGE_CACHE = 'noorish-pages';
+// Per version: a page saved by an older version names files that version's
+// cleanup deleted, so it must never be served after an update.
+const PAGE_CACHE = `noorish-pages-${VERSION}`;
 const DATA_CACHE = 'noorish-quran';
 const SHELL = '/';
+/**
+ * A launch on a weak connection shows the saved page after this long
+ * instead of a blank screen; the network response still refreshes the cache.
+ */
+const NETWORK_TIMEOUT_MS = 3000;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -56,21 +64,25 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/_serverFn')) return;
 
-  if (request.mode === 'navigate') event.respondWith(networkFirstPage(request));
+  if (request.mode === 'navigate') event.respondWith(networkFirstPage(request, event));
   else if (url.pathname.startsWith('/assets/')) event.respondWith(cacheFirst(request, APP_CACHE));
   else if (url.pathname.startsWith('/quran/')) event.respondWith(staleWhileRevalidate(request, DATA_CACHE, event));
   else event.respondWith(staleWhileRevalidate(request, APP_CACHE, event));
 });
 
-async function networkFirstPage(request) {
+async function networkFirstPage(request, event) {
   const cache = await caches.open(PAGE_CACHE);
-  try {
-    const response = await fetch(request);
+  const saved = async () => (await cache.match(request, { ignoreSearch: true })) ?? (await cache.match(SHELL));
+  const network = fetch(request).then(async (response) => {
     if (response.ok) await cache.put(request, response.clone());
     return response;
-  } catch {
-    return (await cache.match(request, { ignoreSearch: true })) ?? (await cache.match(SHELL)) ?? Response.error();
-  }
+  });
+  event.waitUntil(network.catch(() => {}));
+
+  const timeout = new Promise((resolve) => setTimeout(resolve, NETWORK_TIMEOUT_MS));
+  const first = await Promise.race([network.catch(() => null), timeout.then(() => null)]);
+  if (first) return first;
+  return (await saved()) ?? (await network.catch(() => Response.error()));
 }
 
 async function cacheFirst(request, cacheName) {

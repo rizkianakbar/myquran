@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { Dock } from '#/features/dock/dock.tsx';
 import { DockSheet } from '#/features/dock/dock-sheet.tsx';
 import { usePlanSync } from '#/features/plans/plans.hooks.ts';
+import { hideSplash } from '#/features/pwa/pwa-splash.ts';
 import { PwaUpdatePrompt } from '#/features/pwa/pwa-update-prompt.tsx';
 import { useT } from '#/lib/i18n.ts';
 import { useApplyPrefs, useGlobalShortcuts, usePrefetchAllSurahs, useServiceWorker } from './app-shell.hooks.ts';
@@ -18,6 +19,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   usePrefetchAllSurahs();
   usePlanSync();
   useServiceWorker();
+  // The installed app's splash leaves once the page under it is ready.
+  useEffect(hideSplash, []);
 
   return (
     // The document scrolls, not an inner box (see `src/lib/page-scroll.ts`). With

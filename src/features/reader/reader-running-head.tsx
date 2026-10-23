@@ -85,8 +85,9 @@ export function RunningHead({
       <div
         inert={!visible}
         className={cn(
-          'dark relative overflow-hidden bg-(--ornament-field) text-foreground shadow-[0_10px_30px_-14px_oklch(0.15_0.05_262/0.7)] transition-[translate,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
-          visible ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-full opacity-0',
+          'dark relative overflow-hidden bg-(--ornament-field) text-foreground shadow-[0_10px_30px_-14px_oklch(0.15_0.05_262/0.7)] transition-[translate,opacity,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
+          // `invisible` once faded, so iOS Safari doesn't sample it into the status bar area.
+          visible ? 'translate-y-0 opacity-100' : 'pointer-events-none invisible -translate-y-full opacity-0',
         )}>
         <Lattice />
 

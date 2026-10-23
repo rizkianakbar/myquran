@@ -1,5 +1,6 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
+import chapters from './chapters.json' with { type: 'json' };
 import type { Chapter, SurahData, TafsirData, TafsirSlug } from './types.ts';
 
 /**
@@ -26,8 +27,12 @@ function getJson<T>(path: string): Promise<T> {
 
 const surahPath = (surah: number) => `/quran/${surah}.json`;
 
+/**
+ * The chapter list is small and needed on every page (and by the server for
+ * page titles), so it is bundled rather than fetched.
+ */
 export function getChapters(): Promise<Chapter[]> {
-  return getJson('/quran/chapters.json');
+  return Promise.resolve(chapters as Chapter[]);
 }
 
 /**

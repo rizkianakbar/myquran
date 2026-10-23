@@ -56,7 +56,7 @@ src/
 │   └── app-shell.tsx      #   Page frame, dock, global shortcuts
 ├── hooks/                 # Shared React hooks
 ├── lib/                   # Shared logic: prefs, store, i18n, shortcuts, progress
-│   ├── quran/             #   Quran data loaders and types
+│   ├── quran/             #   Quran data loaders, types, bundled chapters.json
 │   └── seo.ts             #   Per-page <head>: titles, canonicals, Open Graph, JSON-LD
 ├── db/                    # Drizzle schema + relations
 ├── server/                # Server code

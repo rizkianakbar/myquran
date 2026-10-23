@@ -14,6 +14,8 @@ const QDC_API = 'https://api.qurancdn.com/api/qdc';
 const EQURAN_API = 'https://equran.id/api/v2';
 
 const OUT_DIR = join(import.meta.dirname, '../public/quran');
+// Bundled into the app (page titles need it on the server), so not under public/.
+const CHAPTERS_PATH = join(import.meta.dirname, '../src/lib/quran/chapters.json');
 const FORCE = process.argv.includes('--force');
 const TOTAL_VERSES = 6236;
 /**
@@ -240,7 +242,7 @@ async function main() {
 
   const chapters = await fetchChapters();
   if (chapters.length !== 114) throw new Error(`Expected 114 chapters, got ${chapters.length}`);
-  await writeJson(join(OUT_DIR, 'chapters.json'), chapters);
+  await writeJson(CHAPTERS_PATH, chapters);
 
   let verseTotal = 0;
   for (const chapter of chapters) {

@@ -1,5 +1,5 @@
 import type { AnyRouteMatch } from '@tanstack/react-router';
-import chapters from '../../public/quran/chapters.json' with { type: 'json' };
+import chapters from './quran/chapters.json' with { type: 'json' };
 import type { Chapter } from './quran/types.ts';
 
 /**

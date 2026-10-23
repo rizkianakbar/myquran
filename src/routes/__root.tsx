@@ -18,9 +18,10 @@ export interface RouterContext {
 /**
  * Applies the saved theme before first paint so dark-mode readers don't get
  * a white flash while the app boots. Mirrors `useApplyPrefs` in app-shell.
- * It also preloads the reader's chosen Arabic font, which only the prefs know.
+ * It also preloads the reader's chosen Arabic font, which only the prefs know,
+ * and marks the installed app (`standalone`) so its splash shows from the first frame.
  */
-const prefsScript = `try{var p=JSON.parse(localStorage.getItem('quran:prefs')||'{}'),t=p.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),r=document.documentElement;r.dataset.theme=t;r.classList.toggle('dark',t==='dark'||t==='night');var f=${JSON.stringify(arabicFontFiles)}[p.arabicFont]||${JSON.stringify(arabicFontFiles.amiri)},l=document.createElement('link');l.rel='preload';l.as='font';l.type='font/woff2';l.crossOrigin='';l.href=f;document.head.appendChild(l)}catch(e){}`;
+const prefsScript = `try{var p=JSON.parse(localStorage.getItem('quran:prefs')||'{}'),t=p.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),r=document.documentElement;r.dataset.theme=t;r.classList.toggle('dark',t==='dark'||t==='night');if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)r.classList.add('standalone');var f=${JSON.stringify(arabicFontFiles)}[p.arabicFont]||${JSON.stringify(arabicFontFiles.amiri)},l=document.createElement('link');l.rel='preload';l.as='font';l.type='font/woff2';l.crossOrigin='';l.href=f;document.head.appendChild(l)}catch(e){}`;
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   // Child routes render on the client only, so their head() never reaches
@@ -41,6 +42,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         { name: 'theme-color', content: '#1b2a4e' },
         // The name under the Home Screen icon on iOS.
         { name: 'apple-mobile-web-app-title', content: 'Noorish' },
+        // Without this iOS ignores the launch images below and opens on a blank screen,
+        // even though the manifest already makes the app standalone.
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
       ],
       links: [
         { rel: 'stylesheet', href: appCss },

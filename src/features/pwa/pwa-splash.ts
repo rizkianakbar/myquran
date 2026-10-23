@@ -9,14 +9,19 @@ export const SPLASH_STAR = `<svg viewBox="0 0 64 64" width="112" height="112" ar
 
 /**
  * Hidden in a browser tab, where the page itself is the first thing seen;
- * shown in the installed app (`display-mode: standalone`). Leaving: the
+ * shown in the installed app: `display-mode: standalone`, or the
+ * `standalone` class the theme script in `__root.tsx` sets from Safari's
+ * `navigator.standalone` (iOS doesn't always report the display mode).
+ * A flat ground, not a gradient: iOS launch images must be PNG, and a
+ * gradient makes each one ~1 MB. Leaving: the
  * ground fades while the star drifts larger and fades a little sooner, like
  * a native launch, then the whole layer stops hit-testing and painting.
  */
 export const SPLASH_CSS = `
-#splash{position:fixed;inset:0;z-index:100;display:none;place-items:center;background:radial-gradient(120% 90% at 50% 42%,#24365f 0%,#1b2a4e 55%,#141f3b 100%)}
+#splash{position:fixed;inset:0;z-index:100;display:none;place-items:center;background:#1b2a4e}
 #splash svg{filter:drop-shadow(0 0 28px rgb(212 169 74/.28))}
 @media (display-mode:standalone){#splash{display:grid}}
+.standalone #splash{display:grid}
 #splash[data-state=out]{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .42s cubic-bezier(.4,0,.2,1),visibility 0s linear .42s}
 #splash[data-state=out] svg{transform:scale(1.12);opacity:0;transition:transform .42s cubic-bezier(.2,0,0,1),opacity .3s cubic-bezier(.4,0,1,1)}
 @media (prefers-reduced-motion:reduce){#splash[data-state=out],#splash[data-state=out] svg{transition-duration:.15s;transform:none}}

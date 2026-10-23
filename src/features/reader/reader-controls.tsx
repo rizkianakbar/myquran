@@ -49,7 +49,7 @@ function ToggleControl({
       aria-pressed={pressed}
       onClick={onClick}
       className={cn(
-        'flex h-12 items-center gap-3 rounded-full py-1.5 pr-5 pl-1.5 ring-1 ring-gold/50 transition-colors hover:bg-gold/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold',
+        'pressable flex h-12 items-center gap-3 rounded-full py-1.5 pr-5 pl-1.5 ring-1 ring-gold/50 hover:bg-gold/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold',
         pressed && 'bg-gold/12',
       )}>
       <span
@@ -91,7 +91,7 @@ export function SurahControls({
         aria-pressed={active}
         onClick={onTogglePlay}
         className={cn(
-          'group flex h-12 items-center gap-3 rounded-full py-1.5 pr-5 pl-1.5 ring-1 ring-gold/50 transition-colors hover:bg-gold/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold',
+          'pressable group flex h-12 items-center gap-3 rounded-full py-1.5 pr-5 pl-1.5 ring-1 ring-gold/50 hover:bg-gold/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold',
           active && 'bg-gold/12',
         )}>
         <span className="flex size-9 items-center justify-center rounded-full bg-gold text-lapis [&_svg]:size-4">
@@ -134,7 +134,7 @@ export function CompactSurahControls({
 }: SurahControlsProps) {
   const t = useT();
   const button =
-    'flex size-8 items-center justify-center rounded-full ring-1 ring-gold/45 text-gold-ink transition-colors hover:bg-gold/15 focus-visible:outline-2 focus-visible:outline-gold [&_svg]:size-3.5';
+    'pressable flex size-8 items-center justify-center rounded-full ring-1 ring-gold/45 text-gold-ink [--press-scale:0.9] hover:bg-gold/15 focus-visible:outline-2 focus-visible:outline-gold [&_svg]:size-3.5';
 
   return (
     <div className="flex items-center justify-end gap-1.5">

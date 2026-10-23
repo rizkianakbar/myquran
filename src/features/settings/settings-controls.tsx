@@ -35,7 +35,7 @@ export function SettingsSegmented<T extends string>({
           aria-pressed={option.value === value}
           onClick={() => onChange(option.value)}
           className={cn(
-            'rounded-md px-3 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground',
+            'pressable rounded-md px-3 py-1 text-sm text-muted-foreground hover:text-foreground',
             option.value === value && 'bg-background text-foreground shadow-sm',
           )}>
           {option.label}

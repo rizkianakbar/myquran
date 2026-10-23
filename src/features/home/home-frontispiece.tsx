@@ -32,14 +32,14 @@ export function HomeFrontispiece() {
                 to="/surah/$surah"
                 params={{ surah: resume.number }}
                 hash={`v${lastRead.verse}`}
-                className="inline-flex h-11 items-center rounded-full bg-gold px-5 text-sm font-medium text-lapis transition-colors hover:bg-gold/85">
+                className="pressable inline-flex h-11 items-center rounded-full bg-gold px-5 text-sm font-medium text-lapis hover:bg-gold/85">
                 {t.continueReading}: {resume.nameSimple}, {t.verseShort(lastRead.verse).toLowerCase()}
               </Link>
             ) : (
               <Link
                 to="/surah/$surah"
                 params={{ surah: 1 }}
-                className="inline-flex h-11 items-center rounded-full bg-gold px-5 text-sm font-medium text-lapis transition-colors hover:bg-gold/85">
+                className="pressable inline-flex h-11 items-center rounded-full bg-gold px-5 text-sm font-medium text-lapis hover:bg-gold/85">
                 {t.startReading}
               </Link>
             )}

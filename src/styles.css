@@ -306,6 +306,31 @@
   text-shadow: 0 0 0.45em color-mix(in oklch, var(--gold) 45%, transparent);
 }
 
+/*
+ * Press feedback for anything that reads as a button: it sinks to 97% while
+ * held and springs straight back. It owns the element's transition (colours,
+ * shadow and scale), so don't pair it with Tailwind's transition-* classes.
+ * Small icon buttons press deeper via `--press-scale`, or 3% of 32px is
+ * invisible. Reduced motion keeps the colour feedback and drops the scale.
+ */
+@utility pressable {
+  transition-property:
+    color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, opacity, box-shadow,
+    scale;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+
+  &:active:not(:disabled, [aria-disabled='true'], [aria-haspopup]) {
+    scale: var(--press-scale, 0.97);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:active:not(:disabled) {
+      scale: none;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

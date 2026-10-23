@@ -82,7 +82,7 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="group relative flex w-full justify-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2 disabled:opacity-50">
+            className="pressable group relative flex w-full justify-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2 disabled:opacity-50">
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
 

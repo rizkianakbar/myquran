@@ -28,7 +28,7 @@ export function NowPlaying() {
         type="button"
         aria-label={state.playing ? t.pause : t.resume}
         onClick={togglePause}
-        className="flex size-8 items-center justify-center rounded-full bg-gold text-lapis transition-colors hover:bg-gold/85 [&_svg]:size-3.5">
+        className="pressable flex size-8 items-center justify-center rounded-full bg-gold text-lapis [--press-scale:0.9] hover:bg-gold/85 [&_svg]:size-3.5">
         {state.loading ? <Loader2 className="animate-spin" /> : state.playing ? <Pause /> : <Play />}
       </button>
       <Link
@@ -51,7 +51,7 @@ export function NowPlaying() {
         title={t.speed}
         onClick={() => stepPlaybackRate(1, { wrap: true })}
         className={cn(
-          'flex h-7 min-w-11 items-center justify-center rounded-full px-2 text-xs tabular-nums ring-1 ring-gold/35 transition-colors hover:bg-gold/15 hover:text-gold-ink',
+          'pressable flex h-7 min-w-11 items-center justify-center rounded-full px-2 text-xs tabular-nums ring-1 ring-gold/35 [--press-scale:0.92] hover:bg-gold/15 hover:text-gold-ink',
           playbackRate === 1 ? 'text-muted-foreground' : 'bg-gold/15 text-gold-ink ring-gold/60',
         )}>
         {formatRate(playbackRate)}
@@ -60,7 +60,7 @@ export function NowPlaying() {
         type="button"
         aria-label={t.stop}
         onClick={stop}
-        className="flex size-8 items-center justify-center rounded-full text-muted-foreground hover:text-gold-ink [&_svg]:size-3.5">
+        className="pressable flex size-8 items-center justify-center rounded-full text-muted-foreground [--press-scale:0.9] hover:text-gold-ink [&_svg]:size-3.5">
         <X />
       </button>
       {state.error && <span className="sr-only">{state.error}</span>}

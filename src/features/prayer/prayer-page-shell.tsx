@@ -24,7 +24,7 @@ export function PrayerPageShell({ title, children }: { title: string; children: 
         <button
           type="button"
           onClick={goBack}
-          className="-ml-2 flex h-9 items-center gap-1.5 rounded-full px-2.5 text-sm text-muted-foreground transition-colors hover:bg-gold/10 hover:text-gold-ink focus-visible:outline-2 focus-visible:outline-gold [&_svg]:size-4">
+          className="pressable -ml-2 flex h-9 items-center gap-1.5 rounded-full px-2.5 text-sm text-muted-foreground hover:bg-gold/10 hover:text-gold-ink focus-visible:outline-2 focus-visible:outline-gold [&_svg]:size-4">
           <ArrowLeft />
           {t.back}
         </button>

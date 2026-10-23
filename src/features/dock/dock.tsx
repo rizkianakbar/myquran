@@ -11,7 +11,7 @@ import { NowPlaying } from './dock-now-playing.tsx';
 import { ReturnChip } from './dock-return-chip.tsx';
 
 const dockButton =
-  'flex h-10 items-center gap-2 rounded-full px-3 text-sm text-(--muted-foreground) transition-colors hover:text-gold-ink focus-visible:outline-2 focus-visible:outline-gold [&_svg]:size-[1.15rem] [&_svg]:shrink-0';
+  'pressable flex h-10 items-center gap-2 rounded-full px-3 text-sm text-(--muted-foreground) [--press-scale:0.92] hover:text-gold-ink focus-visible:outline-2 focus-visible:outline-gold [&_svg]:size-[1.15rem] [&_svg]:shrink-0';
 const dockButtonActive = 'bg-gold/15 text-gold-ink';
 
 function SheetButton({ view, label, children }: { view: DockView; label: string; children: ReactNode }) {
@@ -75,7 +75,7 @@ export function Dock() {
           aria-label={t.home}
           title={t.home}
           aria-current={atHome ? 'page' : undefined}
-          className="group relative mx-2 -my-5 size-17 shrink-0 rounded-full drop-shadow-[0_6px_14px_oklch(0.15_0.05_262/0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
+          className="pressable group relative mx-2 -my-5 size-17 shrink-0 rounded-full [--press-scale:0.94] drop-shadow-[0_6px_14px_oklch(0.15_0.05_262/0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
           <Medallion className="size-full" spinning={player.playing} />
         </Link>
 

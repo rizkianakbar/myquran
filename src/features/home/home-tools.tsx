@@ -8,7 +8,7 @@ import { useT } from '#/lib/i18n.ts';
 import { toggleDock, usePrefs } from '#/lib/prefs.ts';
 
 const tile =
-  'group flex min-w-0 flex-col items-center gap-2 rounded-2xl border bg-card px-2 py-4 text-center transition-colors hover:border-gold/50 focus-visible:outline-2 focus-visible:outline-gold';
+  'pressable group flex min-w-0 flex-col items-center gap-2 rounded-2xl border bg-card px-2 py-4 text-center hover:border-gold/50 focus-visible:outline-2 focus-visible:outline-gold';
 
 function TileBody({ icon, label, detail }: { icon: ReactNode; label: string; detail: string }) {
   return (

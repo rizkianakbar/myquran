@@ -47,7 +47,7 @@ export function CloseButton() {
       data-close
       aria-label={t.close}
       onClick={closeDock}
-      className="flex size-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground [&_svg]:size-4">
+      className="pressable flex size-8 items-center justify-center rounded-full text-muted-foreground [--press-scale:0.9] hover:bg-muted hover:text-foreground [&_svg]:size-4">
       <X />
     </button>
   );

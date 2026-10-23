@@ -69,7 +69,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        'rounded-full border px-3 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground',
+        'pressable rounded-full border px-3 py-1 text-sm text-muted-foreground hover:text-foreground',
         active && 'border-gold/50 bg-gold/15 text-gold-ink hover:text-gold-ink',
       )}>
       {children}

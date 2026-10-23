@@ -17,7 +17,7 @@ export function ReturnChip() {
     <button
       type="button"
       onClick={() => returnToRecitation()}
-      className="pointer-events-auto relative mb-2.5 flex h-9 animate-in items-center gap-2 overflow-hidden rounded-full bg-gold pr-2 pl-3.5 text-sm font-medium text-lapis shadow-[0_10px_24px_-8px_oklch(0.2_0.06_262/0.6)] transition-colors duration-200 fade-in slide-in-from-bottom-2 hover:bg-gold/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold [&_svg]:size-4">
+      className="pointer-events-auto relative mb-2.5 flex h-9 animate-in items-center gap-2 overflow-hidden rounded-full bg-gold pr-2 pl-3.5 text-sm font-medium text-lapis shadow-[0_10px_24px_-8px_oklch(0.2_0.06_262/0.6)] pressable fade-in slide-in-from-bottom-2 hover:bg-gold/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold [&_svg]:size-4">
       {direction === 'up' ? <ArrowUp /> : <ArrowDown />}
       {t.backToVerse(verse)}
       <kbd className="ml-1 rounded border border-lapis/30 px-1.5 text-[11px] font-normal">R</kbd>

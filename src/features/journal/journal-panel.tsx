@@ -59,7 +59,7 @@ export function JournalPanel() {
               aria-selected={tab === id}
               onClick={() => setTab(id)}
               className={cn(
-                'rounded-full px-3 py-1 text-sm text-muted-foreground transition-colors',
+                'pressable rounded-full px-3 py-1 text-sm text-muted-foreground',
                 tab === id && 'bg-gold/15 text-gold-ink',
               )}>
               {label}

@@ -2,7 +2,7 @@ import { useLocation } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { useIsPhone } from '#/hooks/use-media-query.ts';
 import { chromeHiddenStore } from '#/lib/chrome.ts';
-import { atPageEnd, pageScroller } from '#/lib/page-scroll.ts';
+import { atPageEnd } from '#/lib/page-scroll.ts';
 import type { SurahData } from '#/lib/quran/types.ts';
 import { holdInPlace, savedPositions, topVerse } from './reader-scroll.lib.ts';
 
@@ -26,14 +26,13 @@ export function useScrollPosition(main: React.RefObject<HTMLElement | null>, sur
     const saved = savedPositions.get(key);
     const target = document.getElementById(saved?.id ?? hash);
     let release: (() => void) | undefined;
-    const page = pageScroller();
     if (saved && target) {
-      page.scrollTop += target.getBoundingClientRect().top - saved.top;
+      window.scrollBy(0, target.getBoundingClientRect().top - saved.top);
       release = holdInPlace(root, saved.id, saved.top);
     } else if (hash && target) {
       target.scrollIntoView({ block: 'start' });
       release = holdInPlace(root, hash, target.getBoundingClientRect().top);
-    } else page.scrollTop = 0;
+    } else window.scrollTo(0, 0);
 
     let timer: ReturnType<typeof setTimeout> | undefined;
     const save = () => {

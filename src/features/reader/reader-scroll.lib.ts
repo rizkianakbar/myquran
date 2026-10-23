@@ -1,5 +1,3 @@
-import { pageScroller } from '#/lib/page-scroll.ts';
-
 /**
  * How long a verse is held in place while the page around it settles.
  */
@@ -16,7 +14,7 @@ export function holdInPlace(root: HTMLElement, id: string, top: number): () => v
   const align = () => {
     // Looked up each time, in case React replaced the element meanwhile.
     const el = document.getElementById(id);
-    if (el) pageScroller().scrollTop += el.getBoundingClientRect().top - top;
+    if (el) window.scrollBy(0, el.getBoundingClientRect().top - top);
   };
   const observer = new ResizeObserver(align);
   for (const child of root.children) observer.observe(child);
@@ -73,7 +71,7 @@ const VERSE_ID = /^v\d+$/;
  * The verse at the top of the reader, or null at the very top.
  */
 export function topVerse(root: HTMLElement): VersePosition | null {
-  if (pageScroller().scrollTop === 0) return null;
+  if (window.scrollY === 0) return null;
   for (const el of root.querySelectorAll<HTMLElement>('[id^="v"]')) {
     if (!VERSE_ID.test(el.id)) continue;
     const rect = el.getBoundingClientRect();

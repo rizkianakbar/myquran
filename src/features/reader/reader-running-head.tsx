@@ -4,7 +4,6 @@ import { VerseMarker } from '#/components/ornament/headpiece.tsx';
 import { Lattice } from '#/components/ornament/lattice.tsx';
 import { Rosette } from '#/components/ornament/rosette.tsx';
 import { chromeHiddenStore } from '#/lib/chrome.ts';
-import { pageScroller } from '#/lib/page-scroll.ts';
 import { useProgress } from '#/lib/progress.ts';
 import { toArabicNumber } from '#/lib/quran/data.ts';
 import type { Chapter } from '#/lib/quran/types.ts';
@@ -23,10 +22,9 @@ function useScrollProgress(rootRef: React.RefObject<HTMLElement | null>, barRef:
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const page = pageScroller();
     const measure = () => {
-      const range = page.scrollHeight - window.innerHeight;
-      const fraction = range > 0 ? Math.min(1, page.scrollTop / range) : 1;
+      const range = document.documentElement.scrollHeight - window.innerHeight;
+      const fraction = range > 0 ? Math.min(1, window.scrollY / range) : 1;
       if (barRef.current) barRef.current.style.width = `${fraction * 100}%`;
       setAtEnd(fraction > 0.995);
     };

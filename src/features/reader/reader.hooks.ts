@@ -137,6 +137,14 @@ export function useWordSelection(surahData: SurahData | undefined) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: a new surah drops the popover
   useEffect(() => setSelection(null), [surahData?.surah]);
 
+  // The popover is anchored to where the word was; scrolling the page drops it.
+  useEffect(() => {
+    if (!selection) return;
+    const close = () => setSelection(null);
+    window.addEventListener('scroll', close, { passive: true, once: true });
+    return () => window.removeEventListener('scroll', close);
+  }, [selection]);
+
   const wordAt = useCallback(
     (target: EventTarget | null): WordHit | null => {
       if (!surahData || !(target instanceof Element)) return null;
@@ -176,9 +184,6 @@ export function useWordSelection(surahData: SurahData | undefined) {
       if (event.pointerType !== 'mouse' || !selection || selection.pinned) return;
       const into = event.relatedTarget as Element | null;
       if (into?.closest?.('[role="tooltip"]') || wordAt(into)) return;
-      setSelection(null);
-    },
-    onScroll() {
       setSelection(null);
     },
   };

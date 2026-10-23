@@ -122,8 +122,8 @@ Ideas for where Noorish goes next. The rule for every one of them: **the reader 
 
 ### Later
 
-- [ ] **Duas collection** grouped by occasion, with sources.
-- [ ] **Hadith collections** (e.g. An-Nawawi's Forty, Riyad as-Salihin) with cited translations.
+- [x] **Duas collection** grouped by occasion, with sources.
+- [x] **Hadith collections** (e.g. An-Nawawi's Forty, Riyad as-Salihin) with cited translations.
 - [ ] **Hijri calendar and Ramadan mode:** imsak and iftar times and a fasting tracker.
 - [ ] **Zakat calculator.**
 - [x] **Offline and installable (PWA):** the Quran data is already static JSON.
@@ -145,7 +145,7 @@ Ideas for where Noorish goes next. The rule for every one of them: **the reader 
 4. Run migrations against the production database before (or right after) deploying:
 
    ```bash
-     DATABASE_URL=<production session-pooler url> bun db:migrate
+      DATABASE_URL=<production session-pooler url> bun db:migrate
    ```
 
    Migrations are deliberately not run in the Vercel build, so preview builds can't change the production schema.

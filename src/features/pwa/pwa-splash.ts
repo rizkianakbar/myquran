@@ -1,3 +1,5 @@
+import { IOS_SPLASH_SCREENS } from './pwa-screens.ts';
+
 /**
  * The installed app's splash: the lapis ground and the star from the icon.
  * The same markup draws the in-app splash (in the document shell, so it is
@@ -13,18 +15,35 @@ export const SPLASH_STAR = `<svg viewBox="0 0 64 64" width="112" height="112" ar
  * `standalone` class the theme script in `__root.tsx` sets from Safari's
  * `navigator.standalone` (iOS doesn't always report the display mode).
  * A flat ground, not a gradient: iOS launch images must be PNG, and a
- * gradient makes each one ~1 MB. On iOS the page starts below the status
- * bar but the launch image fills the screen, so the splash reaches up by
- * the bar's height (`--splash-shift`, measured in `__root.tsx`) to centre
- * the star on the screen, exactly where the launch image has it. Leaving: the
+ * gradient makes each one ~1 MB. Positioning on iOS: see SCREEN_RULES;
+ * other screens fall back to `--splash-shift`, the status bar height the
+ * script in `__root.tsx` measures (later, but they have no launch image to
+ * match). Until the
+ * splash leaves, the page ground is lapis too, so no frame painted before
+ * it can be white; the theme's own ground takes over under the opaque
+ * splash as the fade begins. Leaving: the
  * ground fades while the star drifts larger and fades a little sooner, like
  * a native launch, then the whole layer stops hit-testing and painting.
  */
+/**
+ * Per screen with a launch image: the splash anchored to the bottom of the
+ * page with the full screen's height. iOS starts the page below the status
+ * bar but the launch image fills the screen, so this puts the star at the
+ * screen's centre, exactly where the launch image has it. CSS, not script:
+ * React hoists the stylesheet to the top of <head>, so no script can run
+ * before the first paint, and the first frame must already be right.
+ */
+const SCREEN_RULES = IOS_SPLASH_SCREENS.map(
+  ({ media, height }) => `@media ${media}{#splash{top:auto;height:${height}px}}`,
+).join('');
+
 export const SPLASH_CSS = `
 #splash{position:fixed;inset:0;top:calc(-1*var(--splash-shift,0px));z-index:100;display:none;place-items:center;background:#1b2a4e}
 #splash svg{filter:drop-shadow(0 0 28px rgb(212 169 74/.28))}
-@media (display-mode:standalone){#splash{display:grid}}
+${SCREEN_RULES}
+@media (display-mode:standalone){#splash{display:grid}html:has(#splash:not([data-state=out])),html:has(#splash:not([data-state=out])) body{background-color:#1b2a4e}}
 .standalone #splash{display:grid}
+.standalone:has(#splash:not([data-state=out])),.standalone:has(#splash:not([data-state=out])) body{background-color:#1b2a4e}
 #splash[data-state=out]{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .42s cubic-bezier(.4,0,.2,1),visibility 0s linear .42s}
 #splash[data-state=out] svg{transform:scale(1.12);opacity:0;transition:transform .42s cubic-bezier(.2,0,0,1),opacity .3s cubic-bezier(.4,0,1,1)}
 @media (prefers-reduced-motion:reduce){#splash[data-state=out],#splash[data-state=out] svg{transition-duration:.15s;transform:none}}

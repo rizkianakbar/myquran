@@ -18,12 +18,18 @@ export interface RouterContext {
 /**
  * Applies the saved theme before first paint so dark-mode readers don't get
  * a white flash while the app boots. Mirrors `useApplyPrefs` in app-shell.
- * It also preloads the reader's chosen Arabic font, which only the prefs know,
- * and marks the installed app (`standalone`) so its splash shows from the first frame.
- * On iOS it also measures the status bar the page starts below (`--splash-shift`), so
- * the splash centres on the screen like the launch image does.
+ * It also preloads the reader's chosen Arabic font, which only the prefs know.
  */
-const prefsScript = `try{var p=JSON.parse(localStorage.getItem('quran:prefs')||'{}'),t=p.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),r=document.documentElement;r.dataset.theme=t;r.classList.toggle('dark',t==='dark'||t==='night');if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)r.classList.add('standalone');if(navigator.standalone)r.style.setProperty('--splash-shift',Math.max(0,screen.height-innerHeight)+'px');var f=${JSON.stringify(arabicFontFiles)}[p.arabicFont]||${JSON.stringify(arabicFontFiles.amiri)},l=document.createElement('link');l.rel='preload';l.as='font';l.type='font/woff2';l.crossOrigin='';l.href=f;document.head.appendChild(l)}catch(e){}`;
+const prefsScript = `try{var p=JSON.parse(localStorage.getItem('quran:prefs')||'{}'),t=p.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),r=document.documentElement;r.dataset.theme=t;r.classList.toggle('dark',t==='dark'||t==='night');var f=${JSON.stringify(arabicFontFiles)}[p.arabicFont]||${JSON.stringify(arabicFontFiles.amiri)},l=document.createElement('link');l.rel='preload';l.as='font';l.type='font/woff2';l.crossOrigin='';l.href=f;document.head.appendChild(l)}catch(e){}`;
+
+/**
+ * Fallbacks for the installed app's splash, which is pure CSS for its first
+ * frame (see `pwa-splash.ts`): marks the app `standalone` where iOS doesn't
+ * report the display mode, and measures the status bar (`--splash-shift`)
+ * for screens without a launch-image rule. React hoists the stylesheet
+ * above this script, so it runs only once that has loaded.
+ */
+const standaloneScript = `try{var r=document.documentElement,s=navigator.standalone;if(s||matchMedia('(display-mode: standalone)').matches)r.classList.add('standalone');if(s)r.style.setProperty('--splash-shift',Math.max(0,screen.height-innerHeight)+'px')}catch(e){}`;
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   // Child routes render on the client only, so their head() never reaches
@@ -32,7 +38,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     const page = pageHead(matches);
     return {
       meta: [
-        { charSet: 'utf-8' },
         // resizes-content: Android shrinks the page for the keyboard instead of covering it.
         // viewport-fit=cover: the page runs under iOS Safari's toolbar and the home indicator
         // instead of stopping above them; bottom-anchored UI pads itself with safe-area insets.
@@ -82,12 +87,17 @@ function RootDocument({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Kept first: the charset must come within the first 1 KB. */}
+        <meta charSet="utf-8" />
+        {/* Before the stylesheet in <HeadContent />, so the installed app's first frame is the splash. */}
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static script from our own constant */}
+        <script dangerouslySetInnerHTML={{ __html: standaloneScript }} />
+        <style>{SPLASH_CSS}</style>
         <HeadContent />
       </head>
       {/* Extensions (e.g. ColorZilla's cz-shortcut-listen) add attributes to <body> before hydration. */}
       <body className="bg-background antialiased" suppressHydrationWarning>
         {/* First frame of the installed app (see `pwa-splash.ts`); faded out by the app shell. */}
-        <style>{SPLASH_CSS}</style>
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static markup from our own constant */}
         <div id="splash" aria-hidden="true" dangerouslySetInnerHTML={{ __html: SPLASH_STAR }} />
         {children}

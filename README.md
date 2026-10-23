@@ -118,7 +118,7 @@ Ideas for where Noorish goes next. The rule for every one of them: **the reader 
 - [x] **Verse of the day** on the home page, linking into the reader.
 - [ ] **Morning and evening adhkar** with a simple tasbih counter.
 - [x] **Reading plans and khatam tracker,** building on the journal's existing progress.
-- [ ] **Memorization (hifz) mode:** hide and reveal verses, and repeat an audio range a set number of times.
+- [x] **Memorization (hifz) mode:** hide and reveal verses, and repeat an audio range a set number of times.
 
 ### Later
 
@@ -145,7 +145,7 @@ Ideas for where Noorish goes next. The rule for every one of them: **the reader 
 4. Run migrations against the production database before (or right after) deploying:
 
    ```bash
-    DATABASE_URL=<production session-pooler url> bun db:migrate
+     DATABASE_URL=<production session-pooler url> bun db:migrate
    ```
 
    Migrations are deliberately not run in the Vercel build, so preview builds can't change the production schema.

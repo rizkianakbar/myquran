@@ -1,4 +1,6 @@
-import { SettingsRow, SettingsSegmented } from '#/features/settings/settings-controls.tsx';
+import { ChoiceGroup } from '#/components/choice-group.tsx';
+import { ChoiceSelect } from '#/components/choice-select.tsx';
+import { SettingsRow } from '#/features/settings/settings-controls.tsx';
 import { useT } from '#/lib/i18n.ts';
 import { usePrefs } from '#/lib/prefs.ts';
 import { cn } from '#/lib/utils.ts';
@@ -74,22 +76,20 @@ function PrayerTimes({ place }: { place: Place }) {
       </section>
 
       <section className="divide-y border-t">
-        <SettingsRow label={t.calculationMethod}>
-          <select
-            aria-label={t.calculationMethod}
+        <SettingsRow label={t.calculationMethod} htmlFor="prayer-method">
+          <ChoiceSelect<PrayerSettings['method']>
+            id="prayer-method"
             value={settings.method}
-            onChange={(e) => setPrayerSetting('method', e.target.value as PrayerSettings['method'])}
-            className="h-8 max-w-full rounded-lg border border-input bg-background px-2 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
-            <option value="auto">{t.methodAuto(METHODS[method].label)}</option>
-            {(Object.keys(METHODS) as MethodId[]).map((id) => (
-              <option key={id} value={id}>
-                {METHODS[id].label}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => setPrayerSetting('method', value)}
+            options={[
+              { value: 'auto', label: t.methodAuto(METHODS[method].label) },
+              ...(Object.keys(METHODS) as MethodId[]).map((id) => ({ value: id, label: METHODS[id].label })),
+            ]}
+            className="max-w-full"
+          />
         </SettingsRow>
         <SettingsRow label={t.asrTime}>
-          <SettingsSegmented<PrayerSettings['madhab']>
+          <ChoiceGroup<PrayerSettings['madhab']>
             label={t.asrTime}
             value={settings.madhab}
             onChange={(v) => setPrayerSetting('madhab', v)}

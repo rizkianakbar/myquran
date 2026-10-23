@@ -34,6 +34,7 @@
     "@fontsource/noto-naskh-arabic": "^5.3.0",
     "@fontsource/reem-kufi": "^5.3.0",
     "@fontsource/scheherazade-new": "^5.3.0",
+    "@hookform/resolvers": "^6.0.0",
     "@tanstack/react-query": "^5.104.5",
     "@tanstack/react-router": "^1.170.45",
     "@tanstack/react-router-ssr-query": "^1.167.3",
@@ -48,6 +49,7 @@
     "pg": "^8.16.3",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "react-hook-form": "^7.90.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {

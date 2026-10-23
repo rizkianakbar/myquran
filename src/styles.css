@@ -307,6 +307,59 @@
 }
 
 /*
+ * A word hidden for memorization: the text goes transparent (keeping its
+ * width, so the verse keeps its shape) over a slim rounded bar across the
+ * middle of the line. A plain background would fill the Arabic fonts' very
+ * tall line box. The word being recited glows gold.
+ */
+.word-hidden {
+  color: transparent;
+  border-radius: 0.375rem;
+  background: linear-gradient(
+    transparent 30%,
+    color-mix(in oklch, var(--foreground) 13%, transparent) 30% 66%,
+    transparent 66%
+  );
+  transition: background 0.15s ease;
+}
+
+.word-hidden[data-current] {
+  background: linear-gradient(
+    transparent 30%,
+    color-mix(in oklch, var(--gold) 55%, transparent) 30% 66%,
+    transparent 66%
+  );
+}
+
+/*
+ * A wrong quiz choice shakes once, like a head shaking no. Reduced motion
+ * cuts it to nothing (see the rule at the end); the red and strike-through
+ * still say it was wrong.
+ */
+@keyframes quiz-shake {
+  0%,
+  100% {
+    translate: 0;
+  }
+  20% {
+    translate: -6px;
+  }
+  40% {
+    translate: 5px;
+  }
+  60% {
+    translate: -4px;
+  }
+  80% {
+    translate: 2px;
+  }
+}
+
+.quiz-shake {
+  animation: quiz-shake 0.36s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+/*
  * Press feedback for anything that reads as a button: it sinks to 97% while
  * held and springs straight back. It owns the element's transition (colours,
  * shadow and scale), so don't pair it with Tailwind's transition-* classes.

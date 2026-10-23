@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MemorizeRouteImport } from './routes/memorize'
 import { Route as PrayerTimesRouteImport } from './routes/prayer-times'
 import { Route as QiblaRouteImport } from './routes/qibla'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -25,6 +26,11 @@ const IndexRoute = IndexRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MemorizeRoute = MemorizeRouteImport.update({
+  id: '/memorize',
+  path: '/memorize',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrayerTimesRoute = PrayerTimesRouteImport.update({
@@ -56,6 +62,7 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/memorize': typeof MemorizeRoute
   '/prayer-times': typeof PrayerTimesRoute
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/memorize': typeof MemorizeRoute
   '/prayer-times': typeof PrayerTimesRoute
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/memorize': typeof MemorizeRoute
   '/prayer-times': typeof PrayerTimesRoute
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/memorize'
     | '/prayer-times'
     | '/qibla'
     | '/settings'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/memorize'
     | '/prayer-times'
     | '/qibla'
     | '/settings'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/login'
+    | '/memorize'
     | '/prayer-times'
     | '/qibla'
     | '/settings'
@@ -114,6 +126,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
+  MemorizeRoute: typeof MemorizeRoute
   PrayerTimesRoute: typeof PrayerTimesRoute
   QiblaRoute: typeof QiblaRoute
   SettingsRoute: typeof SettingsRoute
@@ -135,6 +148,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/memorize': {
+      id: '/memorize'
+      path: '/memorize'
+      fullPath: '/memorize'
+      preLoaderRoute: typeof MemorizeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/prayer-times': {
@@ -178,6 +198,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
+  MemorizeRoute: MemorizeRoute,
   PrayerTimesRoute: PrayerTimesRoute,
   QiblaRoute: QiblaRoute,
   SettingsRoute: SettingsRoute,

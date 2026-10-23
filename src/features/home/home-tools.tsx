@@ -1,11 +1,15 @@
 import { Link } from '@tanstack/react-router';
-import { BookCheck, Clock, Compass } from 'lucide-react';
+import { BookCheck, Brain, Clock, Compass } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { duePassages, passageLabel } from '#/features/memorize/memorize.lib.ts';
+import { memorizeStore } from '#/features/memorize/memorize.store.ts';
 import { usePlan } from '#/features/plans/plans.hooks.ts';
 import { usePrayerDay } from '#/features/prayer/prayer.hooks.ts';
 import { compassPoint, qiblaBearing } from '#/features/prayer/prayer.lib.ts';
 import { useT } from '#/lib/i18n.ts';
 import { toggleDock, usePrefs } from '#/lib/prefs.ts';
+import { dateKey } from '#/lib/progress.ts';
+import { useChapters } from '#/lib/quran/data.ts';
 
 const tile =
   'pressable group flex min-w-0 flex-col items-center gap-2 rounded-2xl border bg-card px-2 py-4 text-center hover:border-gold/50 focus-visible:outline-2 focus-visible:outline-gold';
@@ -43,14 +47,30 @@ export function HomeTools() {
       ? `${t.prayerNames[day.next.name]} ${new Intl.DateTimeFormat(language, { hour: '2-digit', minute: '2-digit', timeZone: place.timezone }).format(day.next.at)}`
       : t.setLocation;
   const bearing = place ? qiblaBearing(place) : null;
+  const { learning, passages } = memorizeStore.use();
+  const dueCount = duePassages(passages, dateKey(new Date())).length;
+  const chapters = useChapters().data;
 
   return (
-    <nav aria-label={t.tools} className="mx-auto mt-10 grid max-w-3xl grid-cols-3 gap-2 sm:gap-3">
+    <nav aria-label={t.tools} className="mx-auto mt-10 grid max-w-3xl grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3">
       <button type="button" onClick={() => toggleDock('journal')} className={tile}>
         <TileBody icon={<BookCheck />} label={t.readingPlan} detail={planDetail} />
       </button>
       <Link to="/prayer-times" className={tile}>
         <TileBody icon={<Clock />} label={t.prayerTimes} detail={prayerDetail} />
+      </Link>
+      <Link to="/memorize" search={{}} className={tile}>
+        <TileBody
+          icon={<Brain />}
+          label={t.memorize}
+          detail={
+            dueCount > 0
+              ? t.dueCount(dueCount)
+              : learning
+                ? passageLabel(chapters?.[learning.range.surah - 1]?.nameSimple, learning.range)
+                : t.memorizeStartShort
+          }
+        />
       </Link>
       <Link to="/qibla" className={tile}>
         <TileBody

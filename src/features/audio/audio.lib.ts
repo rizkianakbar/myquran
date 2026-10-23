@@ -56,6 +56,30 @@ const audio = typeof Audio !== 'undefined' ? new Audio() : null;
 let loaded: { reciter: number; surah: number; data: SurahAudio } | null = null;
 let frame = 0;
 let requestId = 0;
+const verseEndListeners = new Set<(surah: number, verse: number) => void>();
+
+/**
+ * Called when a single verse (not continuous recitation) plays to its end,
+ * e.g. for memorization to repeat it or move on. Returns an unsubscribe.
+ */
+export function onVerseEnd(listener: (surah: number, verse: number) => void): () => void {
+  verseEndListeners.add(listener);
+  return () => verseEndListeners.delete(listener);
+}
+
+function notifyVerseEnd(state: PlayerState) {
+  if (state.continuous || state.surah === null || state.verse === null) return;
+  for (const listener of verseEndListeners) listener(state.surah, state.verse);
+}
+
+/**
+ * How long a verse's recitation lasts, once its surah's timings are loaded.
+ */
+export function verseDurationMs(surah: number, verse: number): number | null {
+  if (loaded?.surah !== surah) return null;
+  const timing = loaded.data.verses.find((t) => t.verse === verse);
+  return timing ? timing.to - timing.from : null;
+}
 
 function update(patch: Partial<PlayerState>) {
   playerStore.set((prev) => ({ ...prev, ...patch }));
@@ -83,6 +107,7 @@ function tick() {
   if (!state.continuous && verseEnd !== undefined && ms >= verseEnd) {
     audio.pause();
     update({ playing: false, word: null });
+    notifyVerseEnd(state);
     return;
   }
 
@@ -129,7 +154,12 @@ if (audio) {
     if (!audio.paused) savePosition();
   });
   audio.addEventListener('waiting', () => update({ loading: true }));
-  audio.addEventListener('ended', () => stop());
+  // A surah's last verse ends with the file, before tick sees the verse end.
+  audio.addEventListener('ended', () => {
+    const state = playerStore.get();
+    stop();
+    notifyVerseEnd(state);
+  });
   audio.addEventListener('error', () => update({ playing: false, loading: false, error: 'Audio failed to load' }));
 }
 

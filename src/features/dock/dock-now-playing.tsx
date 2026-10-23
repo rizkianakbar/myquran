@@ -18,7 +18,8 @@ export function NowPlaying() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { playbackRate } = usePrefs();
   const { data: chapters = [] } = useChapters();
-  if (state.surah === null || state.verse === null) return null;
+  // Memorize has its own controls for the same audio; a second set would only compete.
+  if (state.surah === null || state.verse === null || pathname === '/memorize') return null;
 
   return (
     <section

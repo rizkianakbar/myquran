@@ -1,5 +1,8 @@
-import { ArrowLeft } from 'lucide-react';
+import { ChoiceGroup } from '#/components/choice-group.tsx';
+import { PageHeader } from '#/components/page-header.tsx';
 import { ShortcutList } from '#/components/shortcut-list.tsx';
+import { Button } from '#/components/ui/button.tsx';
+import { Slider } from '#/components/ui/slider.tsx';
 import { reciters } from '#/features/audio/audio.api.ts';
 import { play, stop } from '#/features/audio/audio.lib.ts';
 import { PwaInstallRow } from '#/features/pwa/pwa-install.tsx';
@@ -18,32 +21,23 @@ import {
   themes,
   usePrefs,
 } from '#/lib/prefs.ts';
-import { useGoBack } from './settings.hooks.ts';
-import { SettingsRow, SettingsSegmented, SettingsSelect } from './settings-controls.tsx';
+import { SettingsRow, SettingsSelect } from './settings-controls.tsx';
 
 const PREVIEW_TEXT = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ';
 
 export function SettingsPage() {
   const t = useT();
   const prefs = usePrefs();
-  const goBack = useGoBack();
 
   return (
     <main id="main-content" className="min-w-0 grow">
       <title>{`${t.settings} · ${t.appName}`}</title>
-      <div className="mx-auto max-w-2xl px-4 pt-10 pb-40 sm:px-6">
-        <button
-          type="button"
-          onClick={goBack}
-          className="pressable -ml-2 flex h-9 items-center gap-1.5 rounded-full px-2.5 text-sm text-muted-foreground hover:bg-gold/10 hover:text-gold-ink focus-visible:outline-2 focus-visible:outline-gold [&_svg]:size-4">
-          <ArrowLeft />
-          {t.back}
-        </button>
-        <h1 className="mt-4 font-serif text-2xl">{t.settings}</h1>
+      <div className="mx-auto max-w-2xl px-4 pt-2 pb-40 sm:px-6 sm:pt-10">
+        <PageHeader title={t.settings} />
 
         <div className="mt-6 divide-y">
           <SettingsRow label={t.language} hint={t.languageHint}>
-            <SettingsSegmented<Language>
+            <ChoiceGroup<Language>
               label={t.language}
               value={prefs.language}
               onChange={(v) => setPref('language', v)}
@@ -55,7 +49,7 @@ export function SettingsPage() {
           </SettingsRow>
 
           <SettingsRow label={t.translation}>
-            <SettingsSegmented<TranslationPref>
+            <ChoiceGroup<TranslationPref>
               label={t.translation}
               value={prefs.translation}
               onChange={(v) => setPref('translation', v)}
@@ -69,7 +63,7 @@ export function SettingsPage() {
           </SettingsRow>
 
           <SettingsRow label={t.latin} hint={t.latinHint}>
-            <SettingsSegmented<'on' | 'off'>
+            <ChoiceGroup<'on' | 'off'>
               label={t.latin}
               value={prefs.latin ? 'on' : 'off'}
               onChange={(v) => setPref('latin', v === 'on')}
@@ -81,7 +75,7 @@ export function SettingsPage() {
           </SettingsRow>
 
           <SettingsRow label={t.latinStyle} hint={t.latinStyleHint}>
-            <SettingsSegmented<LatinStyle>
+            <ChoiceGroup<LatinStyle>
               label={t.latinStyle}
               value={prefs.latinStyle}
               onChange={(v) => setPref('latinStyle', v)}
@@ -93,7 +87,7 @@ export function SettingsPage() {
           </SettingsRow>
 
           <SettingsRow label={t.theme}>
-            <SettingsSegmented<Theme>
+            <ChoiceGroup<Theme>
               label={t.theme}
               value={prefs.theme}
               onChange={(v) => setPref('theme', v)}
@@ -101,25 +95,24 @@ export function SettingsPage() {
             />
           </SettingsRow>
 
-          <SettingsRow label={t.arabicFont}>
+          <SettingsRow label={t.arabicFont} htmlFor="setting-arabic-font">
             <SettingsSelect
+              id="setting-arabic-font"
               prefKey="arabicFont"
-              label={t.arabicFont}
               parse={(v) => v as ArabicFont}
               options={Object.entries(arabicFonts).map(([value, f]) => ({ value, label: f.label }))}
             />
           </SettingsRow>
 
           <SettingsRow label={t.arabicSize}>
-            <input
-              type="range"
+            <Slider
+              aria-label={t.arabicSize}
               min={arabicSizeRange.min}
               max={arabicSizeRange.max}
               step={arabicSizeRange.step}
               value={prefs.arabicSize}
-              aria-label={t.arabicSize}
-              onChange={(e) => setPref('arabicSize', Number(e.target.value))}
-              className="w-48 accent-foreground"
+              onValueChange={(value) => setPref('arabicSize', Array.isArray(value) ? value[0] : value)}
+              className="w-48"
             />
           </SettingsRow>
 
@@ -134,7 +127,7 @@ export function SettingsPage() {
           </div>
 
           <SettingsRow label={t.wordByWord} hint={t.wordByWordHint}>
-            <SettingsSegmented<'on' | 'off'>
+            <ChoiceGroup<'on' | 'off'>
               label={t.wordByWord}
               value={prefs.wordByWord ? 'on' : 'off'}
               onChange={(v) => setPref('wordByWord', v === 'on')}
@@ -146,7 +139,7 @@ export function SettingsPage() {
           </SettingsRow>
 
           <SettingsRow label={t.speed} hint={t.speedHint}>
-            <SettingsSegmented<string>
+            <ChoiceGroup<string>
               label={t.speed}
               value={String(prefs.playbackRate)}
               onChange={(v) => setPref('playbackRate', Number(v))}
@@ -154,28 +147,28 @@ export function SettingsPage() {
             />
           </SettingsRow>
 
-          <SettingsRow label={t.reciter}>
+          <SettingsRow label={t.reciter} htmlFor="setting-reciter">
             <div className="flex items-center gap-2">
               <SettingsSelect
+                id="setting-reciter"
                 prefKey="reciter"
-                label={t.reciter}
                 parse={Number}
                 options={reciters.map((r) => ({ value: String(r.id), label: r.name }))}
               />
-              <button
-                type="button"
-                className="rounded-lg border px-2.5 py-1 text-sm hover:bg-muted"
+              <Button
+                variant="outline"
+                size="lg"
                 onClick={() => {
                   stop();
                   void play(1, 1);
                 }}>
                 {t.play}
-              </button>
+              </Button>
             </div>
           </SettingsRow>
 
           <SettingsRow label={t.planOnHome} hint={t.planOnHomeHint}>
-            <SettingsSegmented<'on' | 'off'>
+            <ChoiceGroup<'on' | 'off'>
               label={t.planOnHome}
               value={prefs.planOnHome ? 'on' : 'off'}
               onChange={(v) => setPref('planOnHome', v === 'on')}

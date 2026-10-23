@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { LocateFixed, MapPin } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
 import { Button } from '#/components/ui/button.tsx';
+import { Field, FieldLabel } from '#/components/ui/field.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { useT } from '#/lib/i18n.ts';
 import { usePrefs } from '#/lib/prefs.ts';
@@ -55,13 +56,17 @@ export function PrayerLocationPicker({ onDone }: { onDone?: () => void }) {
       </Button>
       {locateError && <p className="text-sm text-muted-foreground">{locateError}</p>}
 
-      <div>
+      <Field>
+        <FieldLabel htmlFor="prayer-city" className="sr-only">
+          {t.searchCity}
+        </FieldLabel>
         <Input
+          id="prayer-city"
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t.searchCity}
-          aria-label={t.searchCity}
+          className="h-9"
         />
         {deferred.length >= 2 && (
           <ul className="mt-2 divide-y rounded-lg border" aria-live="polite">
@@ -85,7 +90,7 @@ export function PrayerLocationPicker({ onDone }: { onDone?: () => void }) {
             ))}
           </ul>
         )}
-      </div>
+      </Field>
 
       <p className="text-xs text-muted-foreground">{t.locationPrivacy}</p>
     </div>

@@ -1,10 +1,11 @@
 import { Link } from '@tanstack/react-router';
 import { type FormEvent, useState } from 'react';
+import { ChoiceGroup } from '#/components/choice-group.tsx';
 import { Button } from '#/components/ui/button.tsx';
+import { Field, FieldLabel } from '#/components/ui/field.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { useT } from '#/lib/i18n.ts';
 import { usePrefs } from '#/lib/prefs.ts';
-import { cn } from '#/lib/utils.ts';
 import { requestPlanSync, usePlan } from './plans.hooks.ts';
 import { addDays, PLAN_LENGTHS, type PlanSummary } from './plans.lib.ts';
 import { accountStore, endPlan, setPlanEndDate, startPlan } from './plans.store.ts';
@@ -34,46 +35,35 @@ function PlanSetup({ today }: { today: string }) {
   return (
     <form onSubmit={submit} className="rounded-lg border bg-card p-4">
       <p className="text-sm text-muted-foreground">{t.planIntro}</p>
-      <fieldset className="mt-4 flex flex-wrap gap-1.5">
-        <legend className="sr-only">{t.planEndDate}</legend>
-        {PLAN_LENGTHS.map((days) => (
-          <Chip key={days} active={length === days} onClick={() => setLength(days)}>
-            {t.planDays(days)}
-          </Chip>
-        ))}
-        <Chip active={length === 'date'} onClick={() => setLength('date')}>
-          {t.planEndDate}…
-        </Chip>
-      </fieldset>
+      <ChoiceGroup<number | 'date'>
+        label={t.planEndDate}
+        value={length}
+        onChange={setLength}
+        options={[
+          ...PLAN_LENGTHS.map((days) => ({ value: days, label: t.planDays(days) })),
+          { value: 'date' as const, label: `${t.planEndDate}…` },
+        ]}
+        className="mt-4"
+      />
       {length === 'date' && (
-        <Input
-          type="date"
-          aria-label={t.planEndDate}
-          min={today}
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="mt-3 w-auto"
-        />
+        <Field className="mt-3 w-auto">
+          <FieldLabel htmlFor="plan-end-date" className="sr-only">
+            {t.planEndDate}
+          </FieldLabel>
+          <Input
+            id="plan-end-date"
+            type="date"
+            min={today}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="w-auto"
+          />
+        </Field>
       )}
       <Button type="submit" size="lg" className="mt-4" disabled={!endDate || endDate < today}>
         {t.startPlan}
       </Button>
     </form>
-  );
-}
-
-function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={cn(
-        'pressable rounded-full border px-3 py-1 text-sm text-muted-foreground hover:text-foreground',
-        active && 'border-gold/50 bg-gold/15 text-gold-ink hover:text-gold-ink',
-      )}>
-      {children}
-    </button>
   );
 }
 
@@ -91,14 +81,19 @@ function PlanActions({ plan, today }: { plan: ReadingPlan; today: string }) {
           if (date >= today) setPlanEndDate(date);
           setMode('idle');
         }}>
-        <Input
-          type="date"
-          aria-label={t.planEndDate}
-          min={today}
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="w-auto"
-        />
+        <Field className="w-auto">
+          <FieldLabel htmlFor="plan-change-date" className="sr-only">
+            {t.planEndDate}
+          </FieldLabel>
+          <Input
+            id="plan-change-date"
+            type="date"
+            min={today}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="w-auto"
+          />
+        </Field>
         <Button type="submit" size="sm" disabled={!date || date < today}>
           {t.save}
         </Button>

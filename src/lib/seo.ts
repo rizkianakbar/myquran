@@ -11,9 +11,24 @@ import type { Chapter } from './quran/types.ts';
 export const SITE_URL = 'https://noorish.rzknkbr.xyz';
 const SITE_NAME = 'Noorish';
 
-const HOME_TITLE = 'Noorish: Read the Quran Word by Word, with Tafsir & Audio';
+// 'and', not '&': link-preview tools count the escaped `&amp;` against the ~60 limit.
+const HOME_TITLE = 'Noorish: Read the Quran Word by Word, with Tafsir and Audio';
 const HOME_DESCRIPTION =
   'Read all 114 surahs of the Quran in Arabic with word-by-word meanings, English and Indonesian translations, Ibn Kathir tafsir, and verse-by-verse recitation.';
+/**
+ * Link previews show ~125 characters, fewer than search results.
+ */
+const HOME_SOCIAL_DESCRIPTION =
+  'Read all 114 surahs in Arabic, word by word, with English and Indonesian translations, Ibn Kathir tafsir and recitation.';
+/**
+ * 1200×630 (1.91:1), the size Facebook, X, LinkedIn and chat apps expect.
+ */
+const OG_IMAGE = {
+  url: `${SITE_URL}/og.jpg`,
+  width: '1200',
+  height: '630',
+  alt: 'Noorish: read the Quran, word by word',
+};
 
 type Head = {
   meta: Array<Record<string, string>>;
@@ -28,10 +43,12 @@ function jsonLd(data: object) {
 function page({
   title,
   description,
+  socialDescription,
   path,
 }: {
   title: string;
   description: string;
+  socialDescription: string;
   path: string;
 }): Omit<Head, 'scripts'> & { url: string } {
   const url = `${SITE_URL}${path}`;
@@ -43,17 +60,25 @@ function page({
       { property: 'og:type', content: 'website' },
       { property: 'og:site_name', content: SITE_NAME },
       { property: 'og:title', content: title },
-      { property: 'og:description', content: description },
+      { property: 'og:description', content: socialDescription },
       { property: 'og:url', content: url },
-      { property: 'og:image', content: `${SITE_URL}/apple-touch-icon.png` },
-      { name: 'twitter:card', content: 'summary' },
+      { property: 'og:image', content: OG_IMAGE.url },
+      { property: 'og:image:width', content: OG_IMAGE.width },
+      { property: 'og:image:height', content: OG_IMAGE.height },
+      { property: 'og:image:alt', content: OG_IMAGE.alt },
+      { name: 'twitter:card', content: 'summary_large_image' },
     ],
     links: [{ rel: 'canonical', href: url }],
   };
 }
 
 function homeHead(): Head {
-  const { meta, links } = page({ title: HOME_TITLE, description: HOME_DESCRIPTION, path: '/' });
+  const { meta, links } = page({
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    socialDescription: HOME_SOCIAL_DESCRIPTION,
+    path: '/',
+  });
   return {
     meta,
     links,
@@ -90,7 +115,8 @@ function surahHead(chapter: Chapter): Head {
   const place = chapter.revelationPlace === 'makkah' ? 'Meccan' : 'Medinan';
   const title = `Surah ${chapter.nameSimple} (${chapter.number}) – ${chapter.nameEn}, Word by Word | ${SITE_NAME}`;
   const description = `Read Surah ${chapter.nameSimple} (${chapter.nameArabic}), “${chapter.nameEn}”, a ${place} surah of ${chapter.versesCount} verses, in Arabic with word-by-word meanings, translation, Ibn Kathir tafsir, and recitation.`;
-  const { url, meta, links } = page({ title, description, path: `/surah/${chapter.number}` });
+  const socialDescription = `Surah ${chapter.nameSimple}, “${chapter.nameEn}”: ${chapter.versesCount} verses, word by word, with tafsir and recitation.`;
+  const { url, meta, links } = page({ title, description, socialDescription, path: `/surah/${chapter.number}` });
   return {
     meta,
     links,

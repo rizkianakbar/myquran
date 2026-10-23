@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import type { Chapter, SurahData, TafsirData, TafsirSlug } from './types.ts';
 
 /**
- * Quran content is static JSON under /quran (built by `mise quran:fetch`).
+ * Quran content is static JSON under /quran (built by `bun quran:fetch`).
  * Promises are cached so repeat navigation never refetches or reparses.
  */
 const cache = new Map<string, Promise<unknown>>();

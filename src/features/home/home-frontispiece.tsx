@@ -17,7 +17,7 @@ export function HomeFrontispiece() {
       <div className="grid items-center gap-8 p-8 sm:p-12 md:grid-cols-[1fr_minmax(0,22rem)] md:gap-4">
         <div className="relative z-10 max-w-md">
           <p dir="rtl" lang="ar" className="text-left font-kufi text-5xl text-gold-ink sm:text-6xl">
-            قُرْآنِي
+            نُورِيش
           </p>
           <h1 className="mt-5 font-serif text-3xl leading-tight font-medium sm:text-4xl">{t.homeTagline}</h1>
           <p className="mt-4 font-serif text-base leading-relaxed text-muted-foreground">{t.homeIntro}</p>

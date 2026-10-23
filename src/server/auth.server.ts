@@ -14,7 +14,7 @@ import { env } from './env.server.ts';
  * columns casually.
  */
 export const auth = betterAuth({
-  appName: 'myQuran',
+  appName: 'Noorish',
   baseURL: env.BETTER_AUTH_URL,
   secret: env.BETTER_AUTH_SECRET,
   database: drizzleAdapter(db, { provider: 'pg', usePlural: true, schema }),

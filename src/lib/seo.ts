@@ -8,10 +8,10 @@ import type { Chapter } from './quran/types.ts';
  * `head()` runs on the server: it builds every page's tags from the matched
  * route, and the chapter names are bundled so server and client agree.
  */
-export const SITE_URL = 'https://myquran.rzknkbr.xyz';
-const SITE_NAME = 'myQuran';
+export const SITE_URL = 'https://noorish.rzknkbr.xyz';
+const SITE_NAME = 'Noorish';
 
-const HOME_TITLE = 'myQuran: Read the Quran Word by Word, with Tafsir & Audio';
+const HOME_TITLE = 'Noorish: Read the Quran Word by Word, with Tafsir & Audio';
 const HOME_DESCRIPTION =
   'Read all 114 surahs of the Quran in Arabic with word-by-word meanings, English and Indonesian translations, Ibn Kathir tafsir, and verse-by-verse recitation.';
 

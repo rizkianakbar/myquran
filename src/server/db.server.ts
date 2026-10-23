@@ -4,7 +4,7 @@ import { Pool } from 'pg';
 import { relations } from '#/db/relations.ts';
 import { env } from './env.server.ts';
 
-const pool = new Pool({ connectionString: env.DATABASE_URL, application_name: 'myquran' });
+const pool = new Pool({ connectionString: env.DATABASE_URL, application_name: 'noorish' });
 
 // On Vercel Fluid compute, release idle clients before the instance suspends
 // so connections aren't leaked; a no-op everywhere else.

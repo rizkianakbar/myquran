@@ -12,6 +12,7 @@ Package manager is Bun (`bun.lock`); all commands are `package.json` scripts. Th
 - `bun db:generate` — SQL migration from schema changes into `drizzle/` · `bun db:migrate` · `bun db:push` (prototyping) · `bun db:studio` (port 4444)
 - `bun db:seed` — truncate and reseed (`test@example.com` / `password123`, plus a few bookmarks/notes)
 - `bun quran:fetch` — download Quran content into `public/quran/`
+- `bun seo:generate` — regenerate `public/sitemap.xml` and `public/robots.txt` from `SITE_URL` in `src/lib/seo.ts`
 
 Single test file: `bun vitest run src/server/annotations.test.ts`.
 
@@ -23,7 +24,7 @@ There is no separate API server: the backend is TanStack Start server functions 
 
 ### Rendering
 
-`src/start.ts` sets `defaultSsr: false`: the document shell and `<head>` (`shellComponent` in `src/routes/__root.tsx`) are server-rendered, but route components render on the client because the reader depends on per-device state in localStorage (theme, language, translation, progress). An inline script in `__root.tsx` applies the saved theme before first paint. Module-level code in `src/lib/` is still imported on the server, so guard browser globals (`typeof window !== 'undefined'`).
+`src/start.ts` sets `defaultSsr: false`: the document shell and `<head>` (`shellComponent` in `src/routes/__root.tsx`) are server-rendered, but route components render on the client because the reader depends on per-device state in localStorage (theme, language, translation, progress). An inline script in `__root.tsx` applies the saved theme before first paint. Module-level code in `src/lib/` is still imported on the server, so guard browser globals (`typeof window !== 'undefined'`). Because child routes don't render on the server, their own `head()` never reaches the server HTML: per-page titles, canonicals, Open Graph tags and JSON-LD are built in the root route's `head()` by `pageHead()` in `src/lib/seo.ts`, so add new indexable pages there.
 
 ### Server code (`src/server/`)
 
@@ -54,10 +55,10 @@ Tests sit next to the file they cover and are named after it: `features/audio/au
 
 ### Frontend
 
-Code is organised by feature. `src/features/<feature>/` holds everything one feature owns, every file prefixed with the feature name: `<feature>-page.tsx` and other components (`reader-header.tsx`, `verse-card-actions.tsx`), `<feature>.hooks.ts`, `<feature>.lib.ts` (logic, no React), `<feature>.api.ts` (fetching), `<feature>.types.ts`. Features: `reader` (surah page, verse cards, mushaf), `audio` (recitation player), `search` (Web Worker index), `tafsir`, `notes`, `journal`, `surahs`, `dock`, `home`, `settings`, `auth`. Anything used across features is global: `src/components/` (`ui/` design system, `ornament/`, `app-shell`, `router-anchor`), `src/hooks/`, `src/lib/` (`store`, `prefs`, `i18n`, `shortcuts`, `progress`, `quran/` data). Don't name a file `*.client.*` or `*.server.*` unless you mean it: Start's import protection treats those as client-only/server-only.
+Code is organised by feature. `src/features/<feature>/` holds everything one feature owns, every file prefixed with the feature name: `<feature>-page.tsx` and other components (`reader-header.tsx`, `verse-card-actions.tsx`), `<feature>.hooks.ts`, `<feature>.lib.ts` (logic, no React), `<feature>.api.ts` (fetching), `<feature>.types.ts`. Features: `reader` (surah page, verse cards, mushaf), `audio` (recitation player), `search` (Web Worker index), `tafsir`, `notes`, `journal`, `surahs`, `dock`, `home`, `settings`, `auth`. Anything used across features is global: `src/components/` (`ui/` design system, `ornament/`, `app-shell`, `router-anchor`), `src/hooks/`, `src/lib/` (`store`, `prefs`, `i18n`, `shortcuts`, `progress`, `seo`, `quran/` data). Don't name a file `*.client.*` or `*.server.*` unless you mean it: Start's import protection treats those as client-only/server-only.
 
 Routes in `src/routes/` stay thin: route options (params, loader, fallbacks) plus the feature's page component. `src/routeTree.gen.ts` is generated, never hand-edit it. The router (`src/router.tsx`) creates a fresh `QueryClient` per request and passes it as router context. Quran content is static JSON under `public/quran/`, loaded by `src/lib/quran/data.ts` and cached long by `vercel.json` headers.
 
 ### Design system (`src/components/ui/`)
 
-A small shadcn-style kit (`Button`, `Card`, `Badge`, `Input`, `Textarea`, `Drawer`) built on `class-variance-authority` + Base UI + Tailwind v4. All color tokens are OKLCH CSS variables in `src/styles.css`, monochrome by design, so don't hardcode colors. Extend via `cn()` (`src/lib/utils.ts`) and the existing `variant`/`size` props. `components.json` is at the root; add components with `bun ui add <component>` (writes into `src/components/ui/`), then `bun check` reformats them to this repo's Biome style.
+A small shadcn-style kit (`Button`, `Drawer`, `Input`, `Menu`, `Textarea`) built on `class-variance-authority` + Base UI + Tailwind v4. All color tokens are OKLCH CSS variables in `src/styles.css`, monochrome by design, so don't hardcode colors. Extend via `cn()` (`src/lib/utils.ts`) and the existing `variant`/`size` props. `components.json` is at the root; add components with `bun ui add <component>` (writes into `src/components/ui/`), then `bun check` reformats them to this repo's Biome style.

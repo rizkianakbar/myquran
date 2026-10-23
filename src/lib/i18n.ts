@@ -3,7 +3,7 @@ import type { Chapter } from './quran/types.ts';
 import type { ShortcutGroup, ShortcutId } from './shortcuts.ts';
 
 const en = {
-  appName: 'myQuran',
+  appName: 'Noorish',
   home: 'Home',
   surahs: 'Surahs',
   search: 'Search',
@@ -151,7 +151,7 @@ const en = {
   pausedLabel: 'Paused',
   stop: 'Stop',
   surahNotFound: 'Surah not found',
-  dataMissing: 'Quran data not found. Run `mise quran:fetch` to download it.',
+  dataMissing: 'Quran data not found. Run `bun quran:fetch` to download it.',
   skipToContent: 'Skip to content',
   playWord: 'Play word',
   backToVerse: (n: number) => `Back to verse ${n}`,
@@ -303,7 +303,7 @@ const id: Messages = {
   pausedLabel: 'Dijeda',
   stop: 'Berhenti',
   surahNotFound: 'Surah tidak ditemukan',
-  dataMissing: 'Data Al-Quran belum ada. Jalankan `mise quran:fetch` untuk mengunduhnya.',
+  dataMissing: 'Data Al-Quran belum ada. Jalankan `bun quran:fetch` untuk mengunduhnya.',
   skipToContent: 'Langsung ke konten',
   playWord: 'Putar kata',
   backToVerse: (n) => `Kembali ke ayat ${n}`,

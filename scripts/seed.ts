@@ -1,6 +1,6 @@
 /**
  * Truncates the dev database and seeds a sign-in-able account plus a little
- * demo data. Usage: `bun db:seed` (also run by `mise up`).
+ * demo data. Usage: `bun db:seed`.
  */
 import { hashPassword } from 'better-auth/crypto';
 import { reset } from 'drizzle-seed';

@@ -118,10 +118,9 @@ interface WordHit {
  * Word popover: hover previews on devices with a mouse, tap pins it.
  */
 export function useWordSelection(surahData: SurahData | undefined) {
-  const [selection, setSelection] = useState<WordSelection | null>(null);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: a new surah drops the popover
-  useEffect(() => setSelection(null), [surahData?.surah]);
+  const [picked, setSelection] = useState<WordSelection | null>(null);
+  // A selection from the previous surah is simply not shown on this one.
+  const selection = picked && surahData?.verses[picked.verse.n - 1] === picked.verse ? picked : null;
 
   // The popover is anchored to where the word was; scrolling the page drops it.
   useEffect(() => {

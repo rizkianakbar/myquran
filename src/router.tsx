@@ -1,6 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query';
+import { closeDock } from '#/lib/prefs.ts';
 import { routeTree } from './routeTree.gen.ts';
 
 /**
@@ -26,6 +27,10 @@ export function getRouter() {
   });
 
   setupRouterSsrQueryIntegration({ router, queryClient });
+
+  // Any navigation closes the dock's sheet, hash jumps included, before the
+  // next page renders rather than a frame after.
+  if (typeof window !== 'undefined') router.subscribe('onBeforeNavigate', closeDock);
 
   return router;
 }

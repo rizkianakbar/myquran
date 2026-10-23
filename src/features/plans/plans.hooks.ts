@@ -2,20 +2,16 @@ import { useEffect, useMemo } from 'react';
 import { onIdle } from '#/lib/idle.ts';
 import { dateKey } from '#/lib/progress.ts';
 import { summarizePlan } from './plans.lib.ts';
-import { ensurePlanToday, planStore } from './plans.store.ts';
+import { planStore } from './plans.store.ts';
 
 /**
- * The plan with today's numbers. Fixes today's portion when the day has
- * turned, so it stays put while the reader works through it.
+ * The plan with today's numbers. Nothing is stored on view: until today's
+ * portion is fixed (by `markPlanRead`, before the first verse counts), it is
+ * worked out from the same state the fix will use.
  */
 export function usePlan() {
   const { plan, synced } = planStore.use();
   const today = dateKey(new Date());
-
-  useEffect(() => {
-    if (plan && !plan.completedAt && plan.today?.date !== today) ensurePlanToday();
-  }, [plan, today]);
-
   const summary = useMemo(() => (plan ? summarizePlan(plan, today) : null), [plan, today]);
   return { plan, synced, summary, today };
 }

@@ -40,14 +40,6 @@ export function endPlan() {
 }
 
 /**
- * Fix today's portion if the day has turned since it was last worked out.
- */
-export function ensurePlanToday() {
-  const today = dateKey(new Date());
-  planStore.set((prev) => (prev.plan ? { ...prev, plan: withToday(prev.plan, today) } : prev));
-}
-
-/**
  * Count a verse the reader has read towards the plan. Today's portion is
  * fixed first, so it reflects where the day started, not where it got to.
  */

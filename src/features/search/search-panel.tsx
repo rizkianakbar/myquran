@@ -1,3 +1,4 @@
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { Input } from '#/components/ui/input.tsx';
@@ -6,7 +7,6 @@ import { dockStore, resolveTranslation, usePrefs } from '#/lib/prefs.ts';
 import { useChapters } from '#/lib/quran/data.ts';
 import { searchIndexStore, searchVerses, warmSearch } from './search.api.ts';
 import { normalizeLatin } from './search.lib.ts';
-import type { SearchHit } from './search.types.ts';
 
 function highlight(text: string, query: string) {
   const at = normalizeLatin(text).indexOf(normalizeLatin(query));
@@ -40,20 +40,20 @@ export function SearchPanel() {
     });
   }, []);
 
-  const [found, setFound] = useState<{ query: string; hits: SearchHit[] }>({ query: '', hits: [] });
-
   useEffect(warmSearch, []);
 
-  useEffect(() => {
-    if (deferred.length < 3) return setFound({ query: deferred, hits: [] });
-    let cancelled = false;
+  const search = useQuery({
+    queryKey: ['search', lang, deferred],
+    // Keeps its query, so highlights match the results on screen, not the newer text being searched.
+    queryFn: async () => ({ query: deferred, hits: await searchVerses(deferred, lang) }),
+    enabled: deferred.length >= 3,
     // Until the new answer arrives, the previous results stay up.
-    void searchVerses(deferred, lang).then((hits) => !cancelled && setFound({ query: deferred, hits }));
-    return () => {
-      cancelled = true;
-    };
-  }, [deferred, lang]);
-  const results = found.hits;
+    placeholderData: keepPreviousData,
+    // The index never changes while the app is open.
+    staleTime: Number.POSITIVE_INFINITY,
+  });
+  const found = deferred.length >= 3 ? search.data : undefined;
+  const results = found?.hits ?? [];
 
   return (
     <div className="flex min-h-0 grow flex-col">
@@ -95,7 +95,9 @@ export function SearchPanel() {
                   {r.text}
                 </span>
               ) : (
-                <span className="mt-1 line-clamp-3 block leading-snug">{highlight(r.text, found.query)}</span>
+                <span className="mt-1 line-clamp-3 block leading-snug">
+                  {highlight(r.text, found?.query ?? deferred)}
+                </span>
               )}
             </Link>
           </li>

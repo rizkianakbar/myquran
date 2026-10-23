@@ -50,7 +50,7 @@ function RootDocument({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       {/* Extensions (e.g. ColorZilla's cz-shortcut-listen) add attributes to <body> before hydration. */}
-      <body className="min-h-screen bg-background antialiased" suppressHydrationWarning>
+      <body className="bg-background antialiased" suppressHydrationWarning>
         {children}
         {import.meta.env.DEV && (
           <TanStackDevtools

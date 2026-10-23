@@ -1,11 +1,11 @@
 import { useRef } from 'react';
 import { SurahEnd } from '#/components/ornament/dividers.tsx';
+import { useReaderFontsReady } from '#/hooks/use-reader-fonts-ready.ts';
 import { authClient } from '#/lib/auth-client.ts';
 import { usePrefs } from '#/lib/prefs.ts';
 import { useChapters, useSurah } from '#/lib/quran/data.ts';
 import { cn } from '#/lib/utils.ts';
 import {
-  useReaderFontsReady,
   useReaderShortcuts,
   useReadingTracker,
   useSurahPlayback,

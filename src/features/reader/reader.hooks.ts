@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePlayer } from '#/features/audio/audio.hooks.ts';
 import { play, togglePause, warm } from '#/features/audio/audio.lib.ts';
 import { atPageEnd } from '#/lib/page-scroll.ts';
-import { type ArabicFont, setPref, usePrefs } from '#/lib/prefs.ts';
+import { setPref, usePrefs } from '#/lib/prefs.ts';
 import { progressStore, recordRead, setLastRead } from '#/lib/progress.ts';
 import { getSurah } from '#/lib/quran/data.ts';
 import type { Chapter, SurahData, Verse } from '#/lib/quran/types.ts';
@@ -13,25 +13,7 @@ import { useShortcut } from '#/lib/shortcuts.ts';
 import { bookmarksQueries, toggleBookmarkFn } from '#/server/bookmarks.functions.ts';
 import { notesQueries } from '#/server/notes.functions.ts';
 import type { SurahControlsProps, SurahPlayback } from './reader-controls.tsx';
-import { loadReaderFonts, readerFontsReady } from './reader-fonts.lib.ts';
 import type { WordSelection } from './reader-word-popover.tsx';
-
-/**
- * True once the reader's fonts have loaded; synchronously true on later pages.
- */
-export function useReaderFontsReady(font: ArabicFont): boolean {
-  const [loaded, setLoaded] = useState(() => readerFontsReady(font));
-
-  useEffect(() => {
-    let cancelled = false;
-    void loadReaderFonts(font).then(() => !cancelled && setLoaded(true));
-    return () => {
-      cancelled = true;
-    };
-  }, [font]);
-
-  return loaded || readerFontsReady(font);
-}
 
 /**
  * Record verses as they scroll into the upper part of the reader; the

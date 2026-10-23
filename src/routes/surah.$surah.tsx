@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from '@tanstack/react-router';
 import { ReaderLoadError, ReaderNotFound } from '#/features/reader/reader-fallbacks.tsx';
-import { loadReaderFonts } from '#/features/reader/reader-fonts.lib.ts';
 import { ReaderPage } from '#/features/reader/reader-page.tsx';
+import { loadReaderFonts } from '#/lib/fonts.ts';
 import { prefsStore } from '#/lib/prefs.ts';
 import { chaptersQuery, getSurah, isValidSurah } from '#/lib/quran/data.ts';
 

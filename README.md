@@ -55,7 +55,7 @@ src/
 │   ├── ornament/          #   Geometric ornaments (rosette, headpiece, lattice…)
 │   └── app-shell.tsx      #   Page frame, dock, global shortcuts
 ├── hooks/                 # Shared React hooks
-├── lib/                   # Shared logic: prefs, store, i18n, shortcuts, progress
+├── lib/                   # Shared logic: prefs, store, i18n, shortcuts, progress, fonts
 │   ├── quran/             #   Quran data loaders, types, bundled chapters.json
 │   └── seo.ts             #   Per-page <head>: titles, canonicals, Open Graph, JSON-LD
 ├── db/                    # Drizzle schema + relations
@@ -115,7 +115,7 @@ Ideas for where Noorish goes next. The rule for every one of them: **the reader 
 ### Next: daily companion
 
 - [ ] **Prayer times and qibla:** location opt-in, calculation method in Settings. (`vercel.json` currently sends `Permissions-Policy: geolocation=()`, which must be relaxed to `geolocation=(self)` first.)
-- [ ] **Verse of the day** on the home page, linking into the reader.
+- [x] **Verse of the day** on the home page, linking into the reader.
 - [ ] **Morning and evening adhkar** with a simple tasbih counter.
 - [ ] **Reading plans and khatam tracker,** building on the journal's existing progress.
 - [ ] **Memorization (hifz) mode:** hide and reveal verses, and repeat an audio range a set number of times.

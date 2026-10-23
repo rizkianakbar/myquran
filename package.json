@@ -22,6 +22,7 @@
     "db:studio": "drizzle-kit studio --port 4444",
     "db:seed": "bun scripts/seed.ts",
     "quran:fetch": "bun scripts/fetch-quran.ts",
+    "seo:generate": "bun scripts/seo-files.ts",
     "ui": "bunx shadcn@latest"
   },
   "dependencies": {

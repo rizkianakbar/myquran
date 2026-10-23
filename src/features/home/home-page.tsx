@@ -11,7 +11,6 @@ export function HomePage() {
 
   return (
     <main id="main-content" className="min-w-0 grow overflow-y-auto">
-      <title>{t.appName}</title>
       <div className="mx-auto max-w-5xl px-4 pt-6 pb-40 sm:px-8 sm:pt-10">
         <HomeFrontispiece />
 

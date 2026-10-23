@@ -31,7 +31,9 @@ export function useApplyPrefs() {
   }, [prefs.theme, prefs.language, prefs.arabicFont, prefs.arabicSize]);
 }
 
-const PREFETCH_START_MS = 2000;
+// Counted from the window load event, so the open page's own surah, fonts
+// and audio never share the network with the background prefetch.
+const PREFETCH_START_MS = 5000;
 
 function onSlowOrMeteredConnection(): boolean {
   const { connection } = navigator as { connection?: { saveData?: boolean; effectiveType?: string } };
@@ -58,9 +60,15 @@ export function usePrefetchAllSurahs() {
           cancelIdle = onIdle(next);
         });
     };
-    const timer = setTimeout(next, PREFETCH_START_MS);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const start = () => {
+      timer = setTimeout(next, PREFETCH_START_MS);
+    };
+    if (document.readyState === 'complete') start();
+    else window.addEventListener('load', start, { once: true });
     return () => {
       cancelled = true;
+      window.removeEventListener('load', start);
       clearTimeout(timer);
       cancelIdle();
     };

@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as PrayerTimesRouteImport } from './routes/prayer-times'
+import { Route as QiblaRouteImport } from './routes/qibla'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SurahSurahRouteImport } from './routes/surah.$surah'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -23,6 +25,16 @@ const IndexRoute = IndexRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrayerTimesRoute = PrayerTimesRouteImport.update({
+  id: '/prayer-times',
+  path: '/prayer-times',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QiblaRoute = QiblaRouteImport.update({
+  id: '/qibla',
+  path: '/qibla',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -44,6 +56,8 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/prayer-times': typeof PrayerTimesRoute
+  '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
   '/surah/$surah': typeof SurahSurahRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -51,6 +65,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/prayer-times': typeof PrayerTimesRoute
+  '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
   '/surah/$surah': typeof SurahSurahRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -59,22 +75,47 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/prayer-times': typeof PrayerTimesRoute
+  '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
   '/surah/$surah': typeof SurahSurahRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/settings' | '/surah/$surah' | '/api/auth/$'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/prayer-times'
+    | '/qibla'
+    | '/settings'
+    | '/surah/$surah'
+    | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/settings' | '/surah/$surah' | '/api/auth/$'
+  to:
+    | '/'
+    | '/login'
+    | '/prayer-times'
+    | '/qibla'
+    | '/settings'
+    | '/surah/$surah'
+    | '/api/auth/$'
   id:
-    '__root__' | '/' | '/login' | '/settings' | '/surah/$surah' | '/api/auth/$'
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/prayer-times'
+    | '/qibla'
+    | '/settings'
+    | '/surah/$surah'
+    | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
+  PrayerTimesRoute: typeof PrayerTimesRoute
+  QiblaRoute: typeof QiblaRoute
   SettingsRoute: typeof SettingsRoute
   SurahSurahRoute: typeof SurahSurahRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -94,6 +135,20 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/prayer-times': {
+      id: '/prayer-times'
+      path: '/prayer-times'
+      fullPath: '/prayer-times'
+      preLoaderRoute: typeof PrayerTimesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/qibla': {
+      id: '/qibla'
+      path: '/qibla'
+      fullPath: '/qibla'
+      preLoaderRoute: typeof QiblaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -123,6 +178,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
+  PrayerTimesRoute: PrayerTimesRoute,
+  QiblaRoute: QiblaRoute,
   SettingsRoute: SettingsRoute,
   SurahSurahRoute: SurahSurahRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

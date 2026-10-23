@@ -38,6 +38,7 @@
     "@tanstack/react-router-ssr-query": "^1.167.3",
     "@tanstack/react-start": "^1.169.3",
     "@vercel/functions": "^3.10.2",
+    "adhan": "^4.4.6",
     "better-auth": "^1.7.12",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",

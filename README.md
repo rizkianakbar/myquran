@@ -114,7 +114,7 @@ Ideas for where Noorish goes next. The rule for every one of them: **the reader 
 
 ### Next: daily companion
 
-- [ ] **Prayer times and qibla:** location opt-in, calculation method in Settings. (`vercel.json` currently sends `Permissions-Policy: geolocation=()`, which must be relaxed to `geolocation=(self)` first.)
+- [x] **Prayer times and qibla:** location opt-in, calculation method in Settings. (`vercel.json` currently sends `Permissions-Policy: geolocation=()`, which must be relaxed to `geolocation=(self)` first.)
 - [x] **Verse of the day** on the home page, linking into the reader.
 - [ ] **Morning and evening adhkar** with a simple tasbih counter.
 - [x] **Reading plans and khatam tracker,** building on the journal's existing progress.

@@ -147,6 +147,12 @@ function surahHead(chapter: Chapter): Head {
   };
 }
 
+/**
+ * Pages that set their own <title>, in the reader's language. Per-device
+ * tools, so not indexed.
+ */
+const CLIENT_TITLED = new Set(['/settings', '/prayer-times', '/qibla']);
+
 const noindex: Head = {
   meta: [{ title: SITE_NAME }, { name: 'robots', content: 'noindex' }],
   links: [],
@@ -155,7 +161,7 @@ const noindex: Head = {
 
 /**
  * Tags for the deepest match: the home page and real surahs are indexable;
- * login, settings and not-found pages are not.
+ * login, settings, the prayer tools and not-found pages are not.
  */
 export function pageHead(matches: AnyRouteMatch[]): Head {
   const leaf = matches.at(-1);
@@ -165,7 +171,7 @@ export function pageHead(matches: AnyRouteMatch[]): Head {
     const chapter = (chapters as Chapter[])[Number(leaf.params.surah) - 1];
     if (chapter) return surahHead(chapter);
   }
-  // Settings titles itself in the reader's language.
-  if (leaf.routeId === '/settings') return { ...noindex, meta: noindex.meta.filter((tag) => !('title' in tag)) };
+  // These title themselves in the reader's language.
+  if (CLIENT_TITLED.has(leaf.routeId)) return { ...noindex, meta: noindex.meta.filter((tag) => !('title' in tag)) };
   return noindex;
 }

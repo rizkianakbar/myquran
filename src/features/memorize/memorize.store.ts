@@ -13,7 +13,11 @@ export const memorizeStore = createStore<{
   learning: Learning | null;
   passages: Passage[];
 }>(
-  { settings: { listenRepeats: 1, firstWordHint: true, showMeaning: false, quiz: true }, learning: null, passages: [] },
+  {
+    settings: { listenRepeats: 1, firstWordHint: true, showMeaning: false, practise: 'arabic' },
+    learning: null,
+    passages: [],
+  },
   { key: 'quran:hifz' },
 );
 
@@ -52,6 +56,20 @@ export function recordReview(range: PracticeRange, solid: boolean) {
     ...prev,
     passages: prev.passages.map((p) => (passageId(p) === passageId(range) ? reviewedPassage(p, solid, today) : p)),
   }));
+}
+
+/**
+ * Forget a memorized passage, with its review schedule.
+ */
+export function removePassage(range: PracticeRange) {
+  memorizeStore.set((prev) => ({ ...prev, passages: prev.passages.filter((p) => passageId(p) !== passageId(range)) }));
+}
+
+/**
+ * Drop the passage being learned, and the verses learned in it so far.
+ */
+export function stopLearning() {
+  memorizeStore.set((prev) => ({ ...prev, learning: null }));
 }
 
 export function findPassage(passages: Passage[], range: PracticeRange): Passage | undefined {

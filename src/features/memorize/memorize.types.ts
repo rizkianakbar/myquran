@@ -34,10 +34,13 @@ export interface MemorizeSettings {
   firstWordHint: boolean;
   showMeaning: boolean;
   /**
-   * Fill-the-gap quiz between listening to a verse and reciting it.
+   * What to build from the word bank for each verse: its Arabic, its
+   * meaning, or both (Arabic first).
    */
-  quiz: boolean;
+  practise: Practise;
 }
+
+export type Practise = 'arabic' | 'meaning' | 'both';
 
 /**
  * The passage being learned, and which of its verses are learned so far,
@@ -49,13 +52,12 @@ export interface Learning {
 }
 
 /**
- * Where a session is: listening to, filling the gaps in, or reciting one
- * verse; reciting the whole passage (`connect`, also what a review is); or
- * finished.
+ * Where a session is: listening to one verse, or building it (its Arabic
+ * or its meaning) from a word bank; reciting the whole passage (`connect`,
+ * also what a review is); or finished.
  */
 export type Step =
   | { kind: 'listen'; verse: number }
-  | { kind: 'quiz'; verse: number }
-  | { kind: 'recite'; verse: number }
+  | { kind: 'build'; verse: number; part: 'arabic' | 'meaning' }
   | { kind: 'connect' }
   | { kind: 'done' };

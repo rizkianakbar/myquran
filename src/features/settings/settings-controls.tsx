@@ -20,7 +20,9 @@ export function SettingsRow({
   children: ReactNode;
 }) {
   return (
-    <Field className="gap-2 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+    // Field stacks and stretches its children (*:w-full); side by side from sm up they must
+    // size themselves, or the name and the control squeeze each other.
+    <Field className="gap-2 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:*:w-auto">
       <FieldContent>
         {htmlFor ? <FieldLabel htmlFor={htmlFor}>{label}</FieldLabel> : <FieldTitle>{label}</FieldTitle>}
         {hint && <FieldDescription className="text-xs">{hint}</FieldDescription>}

@@ -1,16 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import {
-  ArrowRight,
-  Check,
-  Eye,
-  EyeOff,
-  Headphones,
-  Loader2,
-  Pause,
-  Play,
-  RotateCcw,
-  SlidersHorizontal,
-} from 'lucide-react';
+import { ArrowRight, Check, Loader2, Pause, Play, RotateCcw, SlidersHorizontal, Volume2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { ChoiceGroup } from '#/components/choice-group.tsx';
 import { Button, buttonVariants } from '#/components/ui/button.tsx';
@@ -32,13 +21,15 @@ import {
   toggleListening,
 } from './memorize.audio.ts';
 import {
+  arabicWords,
   daysUntilDue,
   firstStep,
   LISTEN_REPEATS,
+  meaningWords,
   nextPassage,
   passageLabel,
   sameRange,
-  stepAfterVerse,
+  stepAfterBuild,
 } from './memorize.lib.ts';
 import {
   completePassage,
@@ -49,7 +40,7 @@ import {
   setMemorizeSetting,
 } from './memorize.store.ts';
 import type { PracticeRange, Step } from './memorize.types.ts';
-import { MemorizeQuiz } from './memorize-quiz.tsx';
+import { MemorizeBuild } from './memorize-build.tsx';
 import { MemorizeVerse } from './memorize-verse.tsx';
 
 const EMPTY: ReadonlySet<number> = new Set();
@@ -89,7 +80,7 @@ function ProgressBars({
 }
 
 /**
- * The big round play/pause for whatever this step listens to.
+ * The big round play/pause of the Listen step.
  */
 function ListenButton({
   playing,
@@ -136,14 +127,6 @@ function OptionsPanel() {
           label={t.firstWordHint}
           value={settings.firstWordHint ? 'on' : 'off'}
           onChange={(v) => setMemorizeSetting('firstWordHint', v === 'on')}
-          options={onOff}
-        />
-      </SettingsRow>
-      <SettingsRow label={t.quizSetting}>
-        <ChoiceGroup
-          label={t.quizSetting}
-          value={settings.quiz ? 'on' : 'off'}
-          onChange={(v) => setMemorizeSetting('quiz', v === 'on')}
           options={onOff}
         />
       </SettingsRow>
@@ -212,9 +195,10 @@ function SessionDone({
 }
 
 /**
- * Learning a passage one verse at a time (Listen, then Recite), then all of
- * it together (Connect); or reviewing one, which is Connect alone. One thing
- * to do at a time, with the main action always last and widest.
+ * Learning a passage verse by verse (Listen, then Build it from a word bank:
+ * its Arabic, its meaning, or both), then reciting all of it (Connect); or
+ * reviewing one, which is Connect alone. One thing to do at a time, with the
+ * main action always last and widest.
  */
 export function MemorizeSession({
   range,
@@ -235,16 +219,21 @@ export function MemorizeSession({
   const [step, setStep] = useState<Step>(() => (mode === 'review' ? { kind: 'connect' } : firstStep(range, learning)));
   const [revealed, setRevealed] = useState<ReadonlyMap<number, ReadonlySet<number>>>(new Map());
   const [optionsOpen, setOptionsOpen] = useState(false);
-  const [quizDone, setQuizDone] = useState(false);
-  // Every word of the surah: where the quiz's wrong choices come from.
-  const pool = useMemo(() => surahData?.verses.flatMap((v) => v.words.map((w) => w.a)) ?? [], [surahData]);
+  // Counts every step entered, so going back to a verse gives a fresh puzzle.
+  const [round, setRound] = useState(0);
+  const translation = resolveTranslation(prefs) ?? prefs.language;
+  // Every word of the surah: where the word bank's extra tiles come from.
+  const arabicPool = useMemo(() => surahData?.verses.flatMap((v) => arabicWords(v.words)) ?? [], [surahData]);
+  const meaningPool = useMemo(
+    () => surahData?.verses.flatMap((v) => meaningWords(v[translation])) ?? [],
+    [surahData, translation],
+  );
 
   // Leaving the page stops whatever it was playing.
   useEffect(() => stopListening, []);
 
   if (step.kind === 'done') return <SessionDone range={range} chapter={chapter} mode={mode} />;
 
-  const translationKey = settings.showMeaning ? (resolveTranslation(prefs) ?? prefs.language) : null;
   const verseAt = (n: number): Verse | undefined => surahData?.verses[n - 1];
   const learned = new Set(
     mode === 'review' || step.kind === 'connect'
@@ -260,48 +249,45 @@ export function MemorizeSession({
   const total = range.to - range.from + 1;
   const onThisVerse = listening.mode === 'verse' && listening.verse === verseNumber;
   const onPassage = listening.mode === 'passage';
+  const meaningShown = settings.showMeaning ? translation : null;
 
   const go = (next: Step) => {
     setRevealed(new Map());
-    setQuizDone(false);
+    setRound((n) => n + 1);
     setStep(next);
     // Moving on from a tap, so the next verse may start playing at once.
     if (next.kind === 'listen') listenToVerse(range.surah, next.verse, settings.listenRepeats);
     else stopListening();
   };
-  const gotIt = (n: number) => {
-    markVerseLearned(range, n);
-    const next = stepAfterVerse(range, n);
+  const built = (n: number, part: 'arabic' | 'meaning') => {
+    const next = stepAfterBuild(range, n, part, settings.practise);
+    if (next.kind !== 'build') markVerseLearned(range, n);
     if (next.kind === 'done') completePassage(range);
     go(next);
   };
   const reveal = (n: number, word: number) =>
     setRevealed((prev) => new Map(prev).set(n, new Set(prev.get(n)).add(word)));
-  const allShown = (v: Verse) => revealed.get(v.n)?.size === v.words.length;
-  // "Show verse" shows every word; pressed again, it hides them all again.
-  const toggleShowAll = (v: Verse) =>
-    setRevealed((prev) => new Map(prev).set(v.n, allShown(v) ? new Set() : new Set(v.words.map((_, i) => i + 1))));
 
   const title =
     step.kind === 'listen'
       ? t.stepListen
-      : step.kind === 'quiz'
-        ? t.stepQuiz
-        : step.kind === 'recite'
-          ? t.stepRecite
-          : mode === 'review'
-            ? t.reviewNow
-            : t.stepConnect;
+      : step.kind === 'build'
+        ? step.part === 'arabic'
+          ? t.stepBuild
+          : t.stepBuildMeaning
+        : mode === 'review'
+          ? t.reviewNow
+          : t.stepConnect;
   const hint =
     step.kind === 'listen'
       ? t.stepListenHint
-      : step.kind === 'quiz'
-        ? t.stepQuizHint
-        : step.kind === 'recite'
-          ? t.stepReciteHint
-          : mode === 'review'
-            ? t.reviewHint
-            : t.stepConnectHint;
+      : step.kind === 'build'
+        ? step.part === 'arabic'
+          ? t.stepBuildHint
+          : t.stepBuildMeaningHint
+        : mode === 'review'
+          ? t.reviewHint
+          : t.stepConnectHint;
 
   return (
     <div className="space-y-5">
@@ -332,20 +318,75 @@ export function MemorizeSession({
 
       {/* The step: what to do now, then the verse (or passage) to do it with. */}
       <section
-        key={`${step.kind}-${verseNumber}`}
+        key={`${step.kind}-${verseNumber}-${step.kind === 'build' ? step.part : ''}`}
         className={cn(
           'animate-in rounded-[1.75rem] border bg-card px-5 pt-5 pb-6 duration-300 fade-in slide-in-from-bottom-2 sm:px-7',
           step.kind === 'listen' && 'border-gold/40',
         )}>
-        <p className="text-xs font-medium tracking-[0.16em] text-gold-ink uppercase">{title}</p>
-        <p className="mt-1 text-sm text-muted-foreground">{hint}</p>
+        <div className="flex items-start gap-3">
+          <div className="grow">
+            <p className="text-xs font-medium tracking-[0.16em] text-gold-ink uppercase">{title}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{hint}</p>
+          </div>
+          {step.kind === 'build' && (
+            // Duolingo's speaker: hear the verse again without leaving the puzzle.
+            <Button
+              variant="outline"
+              size="icon-lg"
+              aria-label={t.playVerse}
+              title={t.playVerse}
+              onClick={() => (onThisVerse ? toggleListening() : listenToVerse(range.surah, step.verse, 1))}
+              className="shrink-0 rounded-full text-gold-ink">
+              {onThisVerse && playing ? <Pause /> : <Volume2 />}
+            </Button>
+          )}
+        </div>
 
         <div
           className={cn(
             'mt-5 space-y-6 transition-opacity duration-300',
             fontsReady && surahData ? 'opacity-100' : 'opacity-0',
           )}>
-          {step.kind === 'connect' ? (
+          {step.kind === 'listen' && verse && (
+            <MemorizeVerse
+              verse={verse}
+              hidden={false}
+              firstWordHint={false}
+              revealed={EMPTY}
+              onReveal={() => {}}
+              recitedWord={recited(verse.n)}
+              translation={meaningShown ? verse[meaningShown] : null}
+              size="large"
+            />
+          )}
+
+          {step.kind === 'build' && verse && (
+            <>
+              {/* Building the meaning: the Arabic it translates stays in view as the prompt. */}
+              {step.part === 'meaning' && (
+                <MemorizeVerse
+                  verse={verse}
+                  hidden={false}
+                  firstWordHint={false}
+                  revealed={EMPTY}
+                  onReveal={() => {}}
+                  recitedWord={recited(verse.n)}
+                  translation={null}
+                />
+              )}
+              <MemorizeBuild
+                key={`${verse.key}:${step.part}:${round}`}
+                seed={`${verse.key}:${step.part}:${round}`}
+                part={step.part}
+                words={step.part === 'arabic' ? arabicWords(verse.words) : meaningWords(verse[translation])}
+                pool={step.part === 'arabic' ? arabicPool : meaningPool}
+                onContinue={() => built(verse.n, step.part)}
+                onListenAgain={() => go({ kind: 'listen', verse: verse.n })}
+              />
+            </>
+          )}
+
+          {step.kind === 'connect' &&
             rangeVerses(range).map((n) => {
               const v = verseAt(n);
               return (
@@ -358,27 +399,11 @@ export function MemorizeSession({
                     revealed={revealed.get(n) ?? EMPTY}
                     onReveal={(word) => reveal(n, word)}
                     recitedWord={recited(n)}
-                    translation={translationKey ? v[translationKey] : null}
+                    translation={meaningShown ? v[meaningShown] : null}
                   />
                 )
               );
-            })
-          ) : step.kind === 'quiz' && verse ? (
-            <MemorizeQuiz key={verse.key} verse={verse} pool={pool} onDone={() => setQuizDone(true)} />
-          ) : (
-            verse && (
-              <MemorizeVerse
-                verse={verse}
-                hidden={step.kind === 'recite'}
-                firstWordHint={settings.firstWordHint}
-                revealed={revealed.get(verse.n) ?? EMPTY}
-                onReveal={(word) => reveal(verse.n, word)}
-                recitedWord={recited(verse.n)}
-                translation={translationKey ? verse[translationKey] : null}
-                size="large"
-              />
-            )
-          )}
+            })}
         </div>
       </section>
 
@@ -399,59 +424,16 @@ export function MemorizeSession({
           </div>
           <Button
             size="lg"
+            className={cn(
+              'h-12 w-full rounded-full text-base',
+              onThisVerse && listening.plays >= settings.listenRepeats && goldButton,
+            )}
             variant={onThisVerse && listening.plays >= settings.listenRepeats ? 'default' : 'outline'}
-            className="h-12 w-full rounded-full text-base"
-            onClick={() => go({ kind: settings.quiz ? 'quiz' : 'recite', verse: step.verse })}>
-            {t.readyToRecite}
+            onClick={() =>
+              go({ kind: 'build', verse: step.verse, part: settings.practise === 'meaning' ? 'meaning' : 'arabic' })
+            }>
+            {t.listenDone}
             <ArrowRight data-icon="inline-end" />
-          </Button>
-        </div>
-      )}
-
-      {step.kind === 'quiz' && (
-        <div className="space-y-3">
-          <Button
-            size="lg"
-            variant={quizDone ? 'default' : 'outline'}
-            className={cn('h-12 w-full rounded-full text-base', quizDone && goldButton)}
-            onClick={() => go({ kind: 'recite', verse: step.verse })}>
-            {t.reciteNow}
-            <ArrowRight data-icon="inline-end" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="lg"
-            className="h-11 w-full rounded-full text-muted-foreground"
-            onClick={() => go({ kind: 'listen', verse: step.verse })}>
-            <Headphones data-icon="inline-start" />
-            {t.listenAgain}
-          </Button>
-        </div>
-      )}
-
-      {step.kind === 'recite' && verse && (
-        <div className="space-y-3">
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="lg"
-              className="h-11 flex-1 rounded-full"
-              onClick={() => go({ kind: 'listen', verse: verse.n })}>
-              <Headphones data-icon="inline-start" />
-              {t.listenAgain}
-            </Button>
-            <Button
-              variant="ghost"
-              size="lg"
-              className="h-11 flex-1 rounded-full text-muted-foreground"
-              onClick={() => toggleShowAll(verse)}>
-              {allShown(verse) ? <EyeOff data-icon="inline-start" /> : <Eye data-icon="inline-start" />}
-              {allShown(verse) ? t.hideVerse : t.showVerse}
-            </Button>
-          </div>
-          <Button size="lg" className={cn(goldButton, 'w-full')} onClick={() => gotIt(verse.n)}>
-            <Check data-icon="inline-start" />
-            {t.gotIt}
           </Button>
         </div>
       )}

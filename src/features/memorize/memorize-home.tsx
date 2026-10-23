@@ -1,17 +1,66 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { ArrowRight, RotateCcw } from 'lucide-react';
+import { ArrowRight, RotateCcw, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { ChoiceGroup } from '#/components/choice-group.tsx';
 import { ChoiceSelect } from '#/components/choice-select.tsx';
 import { Button, buttonVariants } from '#/components/ui/button.tsx';
-import { Field, FieldGroup, FieldLabel } from '#/components/ui/field.tsx';
+import { Field, FieldDescription, FieldGroup, FieldLabel, FieldTitle } from '#/components/ui/field.tsx';
 import { useT } from '#/lib/i18n.ts';
 import { usePrefs } from '#/lib/prefs.ts';
 import { dateKey } from '#/lib/progress.ts';
 import type { Chapter } from '#/lib/quran/types.ts';
 import { cn } from '#/lib/utils.ts';
 import { daysUntilDue, duePassages, nextPassage, passageId, passageLabel } from './memorize.lib.ts';
-import { memorizeStore } from './memorize.store.ts';
-import type { PracticeRange } from './memorize.types.ts';
+import { memorizeStore, removePassage, setMemorizeSetting, stopLearning } from './memorize.store.ts';
+import type { PracticeRange, Practise } from './memorize.types.ts';
+
+/**
+ * A row that can be deleted: a trash button beside it, and on press an inline
+ * "are you sure" in the row's place (never a browser dialog), like ending a
+ * reading plan.
+ */
+function DeletableRow({
+  label,
+  question,
+  onDelete,
+  children,
+}: {
+  label: string;
+  question: string;
+  onDelete: () => void;
+  children: React.ReactNode;
+}) {
+  const t = useT();
+  const [confirming, setConfirming] = useState(false);
+
+  if (confirming) {
+    return (
+      <div className="flex animate-in flex-wrap items-center gap-2 px-4 py-3 duration-200 fade-in">
+        <p className="min-w-0 grow text-sm">{question}</p>
+        <Button size="sm" variant="ghost" onClick={() => setConfirming(false)}>
+          {t.cancel}
+        </Button>
+        <Button size="sm" variant="destructive" onClick={onDelete}>
+          {t.delete}
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center">
+      {children}
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        aria-label={label}
+        title={label}
+        onClick={() => setConfirming(true)}
+        className="mr-2 shrink-0 text-muted-foreground hover:text-destructive">
+        <Trash2 />
+      </Button>
+    </div>
+  );
+}
 
 function SectionTitle({ children }: { children: string }) {
   return <h2 className="mb-3 text-xs font-medium tracking-[0.16em] text-gold-ink uppercase">{children}</h2>;
@@ -24,6 +73,7 @@ function PassagePicker({ chapters, initial }: { chapters: Chapter[]; initial: Pr
   const t = useT();
   const navigate = useNavigate();
   const [range, setRange] = useState(initial);
+  const { settings } = memorizeStore.use();
   const count = chapters[range.surah - 1]?.versesCount ?? 1;
   const verses = Array.from({ length: count }, (_, i) => ({ value: i + 1, label: String(i + 1) }));
 
@@ -67,6 +117,20 @@ function PassagePicker({ chapters, initial }: { chapters: Chapter[]; initial: Pr
             />
           </Field>
         </div>
+        <Field>
+          <FieldTitle>{t.practise}</FieldTitle>
+          <ChoiceGroup<Practise>
+            label={t.practise}
+            value={settings.practise}
+            onChange={(v) => setMemorizeSetting('practise', v)}
+            options={[
+              { value: 'arabic', label: t.practiseArabic },
+              { value: 'meaning', label: t.practiseMeaning },
+              { value: 'both', label: t.practiseBoth },
+            ]}
+          />
+          <FieldDescription className="text-xs">{t.practiseHint}</FieldDescription>
+        </Field>
         <Button type="submit" size="lg" className="h-11 w-full rounded-full">
           {t.memorizeStart}
           <ArrowRight data-icon="inline-end" />
@@ -126,26 +190,30 @@ export function MemorizeHome({ chapters }: { chapters: Chapter[] }) {
       {learning && (
         <section>
           <SectionTitle>{t.continueLearning}</SectionTitle>
-          <Link
-            to="/memorize"
-            search={learning.range}
-            className="pressable block rounded-2xl border bg-card px-5 py-4 hover:border-gold/50">
-            <span className="flex items-center gap-3">
-              <span className="grow font-serif text-lg">{name(learning.range)}</span>
-              <ArrowRight className="size-4 text-gold-ink" />
-            </span>
-            <span className="mt-3 block h-1 overflow-hidden rounded-full bg-border">
-              <span
-                className="block h-full bg-gold"
-                style={{
-                  width: `${(learning.learned.length / (learning.range.to - learning.range.from + 1)) * 100}%`,
-                }}
-              />
-            </span>
-            <span className="mt-1.5 block text-xs text-muted-foreground tabular-nums">
-              {t.versesLearned(learning.learned.length, learning.range.to - learning.range.from + 1)}
-            </span>
-          </Link>
+          <div className="rounded-2xl border bg-card">
+            <DeletableRow
+              label={t.deletePassage(name(learning.range))}
+              question={t.stopLearningConfirm(name(learning.range))}
+              onDelete={stopLearning}>
+              <Link to="/memorize" search={learning.range} className="block min-w-0 grow px-5 py-4">
+                <span className="flex items-center gap-3">
+                  <span className="grow font-serif text-lg">{name(learning.range)}</span>
+                  <ArrowRight className="size-4 text-gold-ink" />
+                </span>
+                <span className="mt-3 block h-1 overflow-hidden rounded-full bg-border">
+                  <span
+                    className="block h-full bg-gold"
+                    style={{
+                      width: `${(learning.learned.length / (learning.range.to - learning.range.from + 1)) * 100}%`,
+                    }}
+                  />
+                </span>
+                <span className="mt-1.5 block text-xs text-muted-foreground tabular-nums">
+                  {t.versesLearned(learning.learned.length, learning.range.to - learning.range.from + 1)}
+                </span>
+              </Link>
+            </DeletableRow>
+          </div>
         </section>
       )}
 
@@ -157,23 +225,28 @@ export function MemorizeHome({ chapters }: { chapters: Chapter[] }) {
       {passages.length > 0 && (
         <section>
           <SectionTitle>{t.memorizedPassages}</SectionTitle>
-          <ul className="divide-y rounded-2xl border bg-card">
+          <ul className="divide-y overflow-hidden rounded-2xl border bg-card">
             {[...passages]
               .sort((a, b) => a.surah - b.surah || a.from - b.from)
               .map((passage) => (
                 <li key={passageId(passage)}>
-                  <Link
-                    to="/memorize"
-                    search={{ surah: passage.surah, from: passage.from, to: passage.to, mode: 'review' }}
-                    className={cn(
-                      buttonVariants({ variant: 'ghost' }),
-                      'h-auto w-full justify-between rounded-none px-4 py-3 first:rounded-t-2xl last:rounded-b-2xl',
-                    )}>
-                    <span className="font-serif text-base font-normal">{name(passage)}</span>
-                    <span className="text-xs font-normal text-muted-foreground">
-                      {t.nextReview(relative.format(daysUntilDue(passage, today), 'day'))}
-                    </span>
-                  </Link>
+                  <DeletableRow
+                    label={t.deletePassage(name(passage))}
+                    question={t.deletePassageConfirm(name(passage))}
+                    onDelete={() => removePassage(passage)}>
+                    <Link
+                      to="/memorize"
+                      search={{ surah: passage.surah, from: passage.from, to: passage.to, mode: 'review' }}
+                      className={cn(
+                        buttonVariants({ variant: 'ghost' }),
+                        'h-auto min-w-0 grow justify-between gap-3 rounded-none px-4 py-3',
+                      )}>
+                      <span className="truncate font-serif text-base font-normal">{name(passage)}</span>
+                      <span className="shrink-0 text-xs font-normal text-muted-foreground">
+                        {t.nextReview(relative.format(daysUntilDue(passage, today), 'day'))}
+                      </span>
+                    </Link>
+                  </DeletableRow>
                 </li>
               ))}
           </ul>

@@ -1,16 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import {
+  arabicWords,
   bareArabic,
+  checkGaps,
   daysUntilDue,
   duePassages,
   firstStep,
+  hiddenWords,
+  meaningWords,
   memorizedPassage,
   nextPassage,
   parseRange,
-  quizBlanks,
-  quizChoices,
   reviewedPassage,
+  stepAfterBuild,
   stepAfterVerse,
+  wordBank,
 } from './memorize.lib.ts';
 import type { PracticeRange } from './memorize.types.ts';
 
@@ -89,29 +93,51 @@ describe('parseRange', () => {
   });
 });
 
-describe('the fill-the-gap quiz', () => {
+describe('the word bank', () => {
+  const ikhlas = arabicWords(['قُلْ', 'هُوَ', 'ٱللَّهُ', 'أَحَدٌ', 'ٱللَّهُ', 'ٱلصَّمَدُ', 'لَمْ', 'يَلِدْ'].map((a) => ({ a })));
+
   it('folds away vowel and Quranic marks, so look-alikes count as the same word', () => {
     expect(bareArabic('ٱللَّهُ')).toBe(bareArabic('اللَّهِ'));
     expect(bareArabic('أَحَدٌ')).toBe('احد');
   });
 
-  it('blanks a few words, never the first (the prompt), the same every time', () => {
-    expect(quizBlanks('112:1', 1)).toEqual([1]);
-    expect(quizBlanks('112:1', 3)).toHaveLength(1);
-    const long = quizBlanks('2:255', 50);
-    expect(long).toHaveLength(3);
-    expect(long).not.toContain(1);
-    expect(quizBlanks('2:255', 50)).toEqual(long);
+  it('hides about half the words, anywhere, the same for the same attempt', () => {
+    expect(hiddenWords('112:1:arabic:0', 1)).toEqual([0]);
+    expect(hiddenWords('112:1:arabic:0', 8)).toHaveLength(4);
+    expect(hiddenWords('2:255:arabic:0', 50)).toHaveLength(6);
+    expect(hiddenWords('112:1:arabic:0', 8)).toEqual(hiddenWords('112:1:arabic:0', 8));
+    // Over many attempts the gaps land everywhere, the first word included.
+    const seen = new Set(Array.from({ length: 40 }, (_, n) => hiddenWords(`112:1:arabic:${n}`, 8)).flat());
+    expect(seen.size).toBe(8);
   });
 
-  it('offers the right word among others that differ in their letters', () => {
-    const pool = ['قُلْ', 'هُوَ', 'ٱللَّهُ', 'أَحَدٌ', 'ٱلصَّمَدُ', 'لَمْ', 'يَلِدْ', 'وَلَمْ', 'يُولَدْ', 'ٱللَّهِ'];
-    const choices = quizChoices('ٱللَّهُ', pool, '112:2:1');
-    expect(choices).toHaveLength(4);
-    expect(choices).toContain('ٱللَّهُ');
-    // 'ٱللَّهِ' is the same word with another vowel: never offered as a wrong choice.
-    expect(choices).not.toContain('ٱللَّهِ');
-    expect(new Set(choices.map(bareArabic)).size).toBe(4);
-    expect(quizChoices('ٱللَّهُ', pool, '112:2:1')).toEqual(choices);
+  it('holds every hidden word, plus extras that are never a second right answer', () => {
+    const answer = [ikhlas[2], ikhlas[3]];
+    const pool = [...ikhlas, ...arabicWords([{ a: 'اللَّهِ' }, { a: 'يُولَدْ' }, { a: 'كُفُوًا' }])];
+    const bank = wordBank(answer, pool, 'seed');
+    const texts = bank.map((tile) => tile.text);
+    expect(texts).toEqual(expect.arrayContaining(['ٱللَّهُ', 'أَحَدٌ']));
+    expect(texts).not.toContain('اللَّهِ');
+    expect(new Set(bank.map((tile) => bareArabic(tile.text))).size).toBe(bank.length);
+    expect(bank.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it('marks each gap right or wrong, treating repeated words as interchangeable', () => {
+    const answer = [ikhlas[2], ikhlas[4]];
+    expect(checkGaps(answer, ['ٱللَّهُ', 'ٱللَّهُ'], bareArabic)).toEqual([true, true]);
+    expect(checkGaps(answer, ['ٱللَّهُ', 'أَحَدٌ'], bareArabic)).toEqual([true, false]);
+    expect(checkGaps(answer, ['ٱللَّهُ', null], bareArabic)).toEqual([true, false]);
+  });
+
+  it('splits a translation into tiles without punctuation or case', () => {
+    const words = meaningWords('Say, "He is Allāh, [who is] One,');
+    expect(words.map((w) => w.tile)).toEqual(['Say', 'He', 'is', 'Allāh', 'who', 'is', 'One']);
+    expect(words[1]).toMatchObject({ position: 1, shown: '"He', bare: 'he' });
+  });
+
+  it('builds the meaning after the Arabic only when practising both', () => {
+    expect(stepAfterBuild(IKHLAS, 1, 'arabic', 'both')).toEqual({ kind: 'build', verse: 1, part: 'meaning' });
+    expect(stepAfterBuild(IKHLAS, 1, 'arabic', 'arabic')).toEqual({ kind: 'listen', verse: 2 });
+    expect(stepAfterBuild(IKHLAS, 4, 'meaning', 'both')).toEqual({ kind: 'connect' });
   });
 });

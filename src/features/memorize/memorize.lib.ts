@@ -1,5 +1,5 @@
 import { addDays, daysBetween } from '#/features/plans/plans.lib.ts';
-import type { Learning, Passage, PracticeRange, Step } from './memorize.types.ts';
+import type { Learning, Passage, PracticeRange, Practise, Step } from './memorize.types.ts';
 
 export const LISTEN_REPEATS = [1, 3, 5, 7] as const;
 
@@ -73,7 +73,22 @@ export function firstStep(range: PracticeRange, learning: Learning | null): Step
 }
 
 /**
- * After "I got it" on a verse: the next verse, else the whole passage
+ * What follows building one part of a verse: its meaning (when practising
+ * both), else the next verse, else the whole passage (skipped for a single
+ * verse, which is already the whole passage).
+ */
+export function stepAfterBuild(
+  range: PracticeRange,
+  verse: number,
+  part: 'arabic' | 'meaning',
+  practise: Practise,
+): Step {
+  if (part === 'arabic' && practise === 'both') return { kind: 'build', verse, part: 'meaning' };
+  return stepAfterVerse(range, verse);
+}
+
+/**
+ * After a verse is learned: the next verse, else the whole passage
  * (skipped for a single verse, which is already the whole passage).
  */
 export function stepAfterVerse(range: PracticeRange, verse: number): Step {
@@ -146,37 +161,87 @@ export function bareArabic(word: string): string {
 }
 
 /**
- * Which words of a verse the quiz blanks out (1-based, in reading order):
- * one for a short verse, up to three for a long one, never the first word
- * (the reader's prompt) unless it is the only one.
+ * One word of the text being built: as shown in the sentence, and as it
+ * appears on its tile and is compared (`bare`, which ignores what a learner
+ * can't be expected to match: vowel marks in Arabic, case and punctuation in
+ * a translation).
  */
-export function quizBlanks(verseKey: string, wordCount: number): number[] {
-  if (wordCount <= 1) return [1];
-  const count = wordCount <= 3 ? 1 : wordCount <= 6 ? 2 : 3;
-  const candidates = Array.from({ length: wordCount - 1 }, (_, i) => i + 2);
-  return shuffled(candidates, seededRandom(verseKey))
-    .slice(0, count)
-    .sort((a, b) => a - b);
+export interface BuildWord {
+  /**
+   * 0-based place in its verse; words repeat, so this is what identifies one.
+   */
+  position: number;
+  shown: string;
+  tile: string;
+  bare: string;
+}
+
+export function arabicWords(words: { a: string }[]): BuildWord[] {
+  return words.map(({ a }, position) => ({ position, shown: a, tile: a, bare: bareArabic(a) }));
+}
+
+const EDGE_PUNCTUATION = /^[\s"'“”‘’()[\]{}.,;:!?—–-]+|[\s"'“”‘’()[\]{}.,;:!?—–-]+$/g;
+
+/**
+ * A translation as words: shown with its punctuation, put on tiles without
+ * it (Saheeh's bracketed glosses included, as plain words).
+ */
+export function meaningWords(text: string): BuildWord[] {
+  return text
+    .split(/\s+/)
+    .map((shown) => {
+      const tile = shown.replace(EDGE_PUNCTUATION, '');
+      return { shown, tile, bare: tile.toLowerCase() };
+    })
+    .filter((word) => word.tile.length > 0)
+    .map((word, position) => ({ position, ...word }));
 }
 
 /**
- * Up to four choices for one blank: the right word and others from the same
- * surah that differ from it in their letters (not just their marks), the
- * closest in length first, so the right one can't be spotted by its size.
+ * Which words to hide (indexes, in reading order): about half, between one
+ * and six, anywhere in the verse. Seeded by the attempt, so each attempt is
+ * a fresh puzzle but redraws don't reshuffle it.
  */
-export function quizChoices(correct: string, pool: string[], seed: string, count = 4): string[] {
-  const random = seededRandom(seed);
-  const target = bareArabic(correct);
-  const seen = new Set([target]);
-  const others: string[] = [];
+export function hiddenWords(seed: string, count: number): number[] {
+  const hide = Math.min(6, Math.max(1, Math.round(count / 2)));
+  return shuffled(
+    Array.from({ length: count }, (_, i) => i),
+    seededRandom(seed),
+  )
+    .slice(0, hide)
+    .sort((a, b) => a - b);
+}
+
+export interface Tile {
+  id: number;
+  text: string;
+}
+
+/**
+ * The word bank: the hidden words plus a few others from the same surah
+ * that differ from all of them (so none is a second right answer), closest
+ * in length first, shuffled together.
+ */
+export function wordBank(answer: BuildWord[], pool: BuildWord[], seed: string): Tile[] {
+  const random = seededRandom(`${seed}:bank`);
+  const taken = new Set(answer.map((word) => word.bare));
+  const extras: BuildWord[] = [];
   for (const word of shuffled(pool, random)) {
-    const bare = bareArabic(word);
-    if (seen.has(bare)) continue;
-    seen.add(bare);
-    others.push(word);
+    if (taken.has(word.bare)) continue;
+    taken.add(word.bare);
+    extras.push(word);
   }
-  others.sort(
-    (a, b) => Math.abs(bareArabic(a).length - target.length) - Math.abs(bareArabic(b).length - target.length),
-  );
-  return shuffled([correct, ...others.slice(0, count - 1)], random);
+  const length = answer.reduce((sum, word) => sum + word.bare.length, 0) / answer.length;
+  extras.sort((a, b) => Math.abs(a.bare.length - length) - Math.abs(b.bare.length - length));
+  const extraCount = Math.max(2, Math.min(4, 8 - answer.length));
+  const texts = [...answer.map((word) => word.tile), ...extras.slice(0, extraCount).map((word) => word.tile)];
+  return shuffled(texts, random).map((text, id) => ({ id, text }));
+}
+
+/**
+ * Which gaps were filled right, gap by gap. Compared bare, so two copies of
+ * the same word are interchangeable.
+ */
+export function checkGaps(answer: BuildWord[], placed: (string | null)[], bare: (tile: string) => string): boolean[] {
+  return answer.map((word, i) => placed[i] !== null && placed[i] !== undefined && bare(placed[i]) === word.bare);
 }

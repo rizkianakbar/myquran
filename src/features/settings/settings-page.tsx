@@ -105,15 +105,17 @@ export function SettingsPage() {
           </SettingsRow>
 
           <SettingsRow label={t.arabicSize}>
-            <Slider
-              aria-label={t.arabicSize}
-              min={arabicSizeRange.min}
-              max={arabicSizeRange.max}
-              step={arabicSizeRange.step}
-              value={prefs.arabicSize}
-              onValueChange={(value) => setPref('arabicSize', Array.isArray(value) ? value[0] : value)}
-              className="w-48"
-            />
+            {/* A slider fills its box; beside the label (sm up) that box shrinks to fit, so it needs a width. */}
+            <div className="w-full sm:w-48">
+              <Slider
+                aria-label={t.arabicSize}
+                min={arabicSizeRange.min}
+                max={arabicSizeRange.max}
+                step={arabicSizeRange.step}
+                value={prefs.arabicSize}
+                onValueChange={(value) => setPref('arabicSize', Array.isArray(value) ? value[0] : value)}
+              />
+            </div>
           </SettingsRow>
 
           <div className="rounded-xl border bg-card px-4 py-5">

@@ -88,6 +88,17 @@ function PrayerTimes({ place }: { place: Place }) {
             className="max-w-full"
           />
         </SettingsRow>
+        <SettingsRow label={t.prayerReminders} hint={t.prayerRemindersHint}>
+          <ChoiceGroup
+            label={t.prayerReminders}
+            value={settings.reminders ? 'on' : 'off'}
+            onChange={(v) => setPrayerSetting('reminders', v === 'on')}
+            options={[
+              { value: 'on', label: t.on },
+              { value: 'off', label: t.translationOff },
+            ]}
+          />
+        </SettingsRow>
         <SettingsRow label={t.asrTime}>
           <ChoiceGroup<PrayerSettings['madhab']>
             label={t.asrTime}

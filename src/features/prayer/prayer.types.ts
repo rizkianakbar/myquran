@@ -46,6 +46,10 @@ export interface PrayerSettings {
    */
   method: MethodId | 'auto';
   madhab: 'shafi' | 'hanafi';
+  /**
+   * Ask "have you prayed?" when the app is opened during a prayer's time.
+   */
+  reminders: boolean;
 }
 
 export interface PlaceResult {

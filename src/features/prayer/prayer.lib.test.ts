@@ -6,13 +6,14 @@ import {
   PRAYERS,
   prayerDay,
   qiblaBearing,
+  reminderDue,
   turnBetween,
 } from './prayer.lib.ts';
 import type { Place, PrayerSettings } from './prayer.types.ts';
 
 const JAKARTA: Place = { name: 'Jakarta', lat: -6.2, lng: 106.85, timezone: 'Asia/Jakarta', country: 'ID' };
 const LONDON: Place = { name: 'London', lat: 51.51, lng: -0.13, timezone: 'Europe/London', country: 'GB' };
-const AUTO: PrayerSettings = { place: null, method: 'auto', madhab: 'shafi' };
+const AUTO: PrayerSettings = { place: null, method: 'auto', madhab: 'shafi', reminders: true };
 
 function hhmm(date: Date, timezone: string) {
   return new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: timezone }).format(date);
@@ -85,5 +86,61 @@ describe('qibla', () => {
     expect(compassPoint(359)).toBe('N');
     expect(turnBetween(350, 10)).toBe(20);
     expect(turnBetween(10, 350)).toBe(-20);
+  });
+});
+
+describe('reminderDue', () => {
+  const none: { answered: string[]; snooze: null } = { answered: [], snooze: null };
+  /** Answer whatever is asked at `at`, as the reader tapping "Sudah". */
+  const answer = (state: { answered: string[]; snooze: null }, at: Date) => {
+    const due = reminderDue(prayerDay(JAKARTA, AUTO, at), at, state);
+    return due ? { ...state, answered: [...state.answered, due.id] } : state;
+  };
+  const askedAt = (state: { answered: string[]; snooze: null }, at: Date) =>
+    reminderDue(prayerDay(JAKARTA, AUTO, at), at, state)?.prayer ?? null;
+  // Ten minutes into each of 23 October's prayers in Jakarta.
+  const day = prayerDay(JAKARTA, AUTO, new Date('2026-10-23T03:00:00Z'));
+  const into = (name: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha') =>
+    new Date(day.times[name].getTime() + 10 * 60_000);
+
+  it('asks once at every adhan, five times a day, even after each is answered', () => {
+    let state = none;
+    const asked: (string | null)[] = [];
+    for (const name of ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as const) {
+      asked.push(askedAt(state, into(name)));
+      state = answer(state, into(name));
+      // Answered: not asked again within the same prayer's time.
+      expect(askedAt(state, new Date(into(name).getTime() + 5 * 60_000))).toBeNull();
+    }
+    expect(asked).toEqual(['fajr', 'dhuhr', 'asr', 'maghrib', 'isha']);
+  });
+
+  it('counts each prayer’s time to the next adhan, Fajr’s to sunrise', () => {
+    const isha = reminderDue(prayerDay(JAKARTA, AUTO, into('isha')), into('isha'), none);
+    expect(isha?.endsAt).toEqual(prayerDay(JAKARTA, AUTO, into('isha')).next.at);
+    const fajr = reminderDue(prayerDay(JAKARTA, AUTO, into('fajr')), into('fajr'), none);
+    expect(fajr?.endsAt).toEqual(day.times.sunrise);
+    // Between sunrise and Dhuhr no prayer's time is running.
+    expect(askedAt(none, new Date('2026-10-23T03:00:00Z'))).toBeNull();
+  });
+
+  it('treats last night’s Isha as one prayer either side of midnight', () => {
+    const lateNight = new Date('2026-10-23T18:30:00Z'); // 01:30 on the 24th in Jakarta
+    expect(askedAt(none, lateNight)).toBe('isha');
+    // Answered at 20:10 the night before: not asked again after midnight.
+    const answered = answer(none, into('isha'));
+    expect(askedAt(answered, lateNight)).toBeNull();
+    // The next night's Isha is a new prayer, asked about afresh.
+    const nextNight = new Date(into('isha').getTime() + 24 * 3_600_000);
+    expect(askedAt(answered, nextNight)).toBe('isha');
+  });
+
+  it('waits out a snooze, then asks again within the same prayer', () => {
+    const at = into('asr');
+    const due = reminderDue(prayerDay(JAKARTA, AUTO, at), at, none);
+    const snoozed = { answered: [], snooze: { id: due?.id ?? '', until: at.getTime() + 20 * 60_000 } };
+    expect(reminderDue(prayerDay(JAKARTA, AUTO, at), at, snoozed)).toBeNull();
+    const later = new Date(at.getTime() + 21 * 60_000);
+    expect(reminderDue(prayerDay(JAKARTA, AUTO, later), later, snoozed)?.prayer).toBe('asr');
   });
 });

@@ -135,6 +135,12 @@ export interface PrayerDay {
    * and Dhuhr, and before today's Fajr.
    */
   current: Exclude<PrayerName, 'sunrise'> | null;
+  /**
+   * The prayer whose time is running, from its adhan to the next one (Fajr's
+   * to sunrise). Like `current`, but past midnight it is still last night's
+   * Isha until Fajr. Its start identifies that one prayer.
+   */
+  ongoing: { name: Exclude<PrayerName, 'sunrise'>; start: Date; end: Date } | null;
 }
 
 export function prayerDay(place: Place, settings: PrayerSettings, now: Date): PrayerDay {
@@ -148,7 +154,15 @@ export function prayerDay(place: Place, settings: PrayerSettings, now: Date): Pr
 
   const passed = PRAYERS.filter((p) => times[p] <= now).at(-1);
   const current = !passed || passed === 'sunrise' ? null : passed;
-  return { times, next, current };
+
+  let ongoing: PrayerDay['ongoing'] = null;
+  if (now < times.fajr) {
+    const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+    ongoing = { name: 'isha', start: timesOn(place, settings, yesterday).isha, end: times.fajr };
+  } else if (current) {
+    ongoing = { name: current, start: times[current], end: current === 'fajr' ? times.sunrise : next.at };
+  }
+  return { times, next, current, ongoing };
 }
 
 /**
@@ -194,4 +208,37 @@ export const ARABIC_NAMES: Record<PrayerName, string> = {
 
 export function minutesUntil(at: Date, now: Date): number {
   return Math.max(0, Math.ceil((at.getTime() - now.getTime()) / 60_000));
+}
+
+/**
+ * The reader's answers to the prayer reminder: the prayers they said they
+ * prayed, and one they asked to be reminded of later. Each prayer is
+ * identified by when its time began (see `prayerId`), so every adhan brings
+ * a fresh question, five a day, and last night's Isha is the same prayer
+ * either side of midnight.
+ */
+export interface ReminderState {
+  answered: string[];
+  snooze: { id: string; until: number } | null;
+}
+
+export function prayerId(name: PrayerName, start: Date): string {
+  return `${name}@${start.toISOString()}`;
+}
+
+/**
+ * The prayer to ask about now: the one whose time is running, unless it was
+ * answered or is snoozed. With when its time ends (the next adhan; Fajr's at
+ * sunrise) and its id for recording the answer.
+ */
+export function reminderDue(
+  day: PrayerDay,
+  now: Date,
+  state: ReminderState,
+): { prayer: Exclude<PrayerName, 'sunrise'>; endsAt: Date; id: string } | null {
+  if (!day.ongoing) return null;
+  const id = prayerId(day.ongoing.name, day.ongoing.start);
+  if (state.answered.includes(id)) return null;
+  if (state.snooze?.id === id && state.snooze.until > now.getTime()) return null;
+  return { prayer: day.ongoing.name, endsAt: day.ongoing.end, id };
 }

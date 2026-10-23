@@ -130,6 +130,26 @@ const en = {
   prayerNow: 'Now',
   timesIn: (zone: string) => `Times shown in ${zone}`,
   calculationMethod: 'Calculation method',
+  reminderTitle: (prayer: string) => `It’s ${prayer} time`,
+  reminderAsk: 'Have you prayed?',
+  reminderYes: 'Yes, alhamdulillah',
+  reminderNo: 'Not yet',
+  reminderThanks: 'Alhamdulillah. May Allah accept it from you.',
+  reminderEncourage: (left: string) =>
+    `There’s still ${left} left. Pray now, before its time is over, and don’t leave it.`,
+  reminderPrayNow: 'OK, I’ll pray now',
+  reminderLater: 'Not now',
+  // Al-Baqarah 2:238, Saheeh International, as in public/quran/2.json.
+  reminderVerse:
+    'Maintain with care the [obligatory] prayers and [in particular] the middle [i.e., ʿaṣr] prayer and stand before Allāh, devoutly obedient.',
+  reminderVerseRef: 'Al-Baqarah 2:238',
+  durationLeft: (minutes: number) => {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return h ? `${h} h ${m} min` : `${m} min`;
+  },
+  prayerReminders: 'Prayer reminders',
+  prayerRemindersHint: 'When you open Noorish during a prayer’s time, ask whether you’ve prayed.',
   methodAuto: (label: string) => `Automatic: ${label}`,
   asrTime: 'Asr time',
   asrStandard: 'Standard (Shafi‘i, Maliki, Hanbali)',
@@ -462,6 +482,25 @@ const id: Messages = {
   prayerNow: 'Sekarang',
   timesIn: (zone: string) => `Waktu ditampilkan dalam zona ${zone}`,
   calculationMethod: 'Metode perhitungan',
+  reminderTitle: (prayer: string) => `Sudah masuk waktu ${prayer}`,
+  reminderAsk: 'Sudahkah kamu shalat?',
+  reminderYes: 'Sudah, alhamdulillah',
+  reminderNo: 'Belum',
+  reminderThanks: 'Alhamdulillah. Semoga Allah menerima shalatmu.',
+  reminderEncourage: (left: string) =>
+    `Masih ada ${left} lagi. Yuk shalat sekarang, sebelum waktunya habis — jangan ditinggalkan, ya.`,
+  reminderPrayNow: 'Oke, aku shalat sekarang',
+  reminderLater: 'Nanti',
+  // Al-Baqarah 2:238, terjemahan Kemenag, sesuai public/quran/2.json.
+  reminderVerse: 'Peliharalah semua salat dan salat wusṭa. Dan laksanakanlah (salat) karena Allah dengan khusyuk.',
+  reminderVerseRef: 'Al-Baqarah 2:238',
+  durationLeft: (minutes: number) => {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return h ? `${h} jam ${m} menit` : `${m} menit`;
+  },
+  prayerReminders: 'Pengingat shalat',
+  prayerRemindersHint: 'Saat Anda membuka Noorish di waktu shalat, tanyakan apakah Anda sudah shalat.',
   methodAuto: (label: string) => `Otomatis: ${label}`,
   asrTime: 'Waktu Asar',
   asrStandard: 'Standar (Syafi‘i, Maliki, Hanbali)',

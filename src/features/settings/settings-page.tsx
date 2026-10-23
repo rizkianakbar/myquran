@@ -5,6 +5,7 @@ import { Button } from '#/components/ui/button.tsx';
 import { Slider } from '#/components/ui/slider.tsx';
 import { reciters } from '#/features/audio/audio.api.ts';
 import { play, stop } from '#/features/audio/audio.lib.ts';
+import { prayerStore, setPrayerSetting } from '#/features/prayer/prayer.store.ts';
 import { PwaInstallRow } from '#/features/pwa/pwa-install.tsx';
 import { useT } from '#/lib/i18n.ts';
 import {
@@ -28,6 +29,7 @@ const PREVIEW_TEXT = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱ�
 export function SettingsPage() {
   const t = useT();
   const prefs = usePrefs();
+  const prayerSettings = prayerStore.use();
 
   return (
     <main id="main-content" className="min-w-0 grow">
@@ -174,6 +176,18 @@ export function SettingsPage() {
               label={t.planOnHome}
               value={prefs.planOnHome ? 'on' : 'off'}
               onChange={(v) => setPref('planOnHome', v === 'on')}
+              options={[
+                { value: 'on', label: t.on },
+                { value: 'off', label: t.translationOff },
+              ]}
+            />
+          </SettingsRow>
+
+          <SettingsRow label={t.prayerReminders} hint={t.prayerRemindersHint}>
+            <ChoiceGroup
+              label={t.prayerReminders}
+              value={prayerSettings.reminders ? 'on' : 'off'}
+              onChange={(v) => setPrayerSetting('reminders', v === 'on')}
               options={[
                 { value: 'on', label: t.on },
                 { value: 'off', label: t.translationOff },

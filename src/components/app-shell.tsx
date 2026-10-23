@@ -1,11 +1,17 @@
-import { type ReactNode, useEffect } from 'react';
+import { lazy, type ReactNode, Suspense, useEffect } from 'react';
 import { Dock } from '#/features/dock/dock.tsx';
 import { DockSheet } from '#/features/dock/dock-sheet.tsx';
 import { usePlanSync } from '#/features/plans/plans.hooks.ts';
+import { prayerStore } from '#/features/prayer/prayer.store.ts';
 import { hideSplash } from '#/features/pwa/pwa-splash.ts';
 import { PwaUpdatePrompt } from '#/features/pwa/pwa-update-prompt.tsx';
 import { useT } from '#/lib/i18n.ts';
 import { useApplyPrefs, useGlobalShortcuts, usePrefetchAllSurahs, useServiceWorker } from './app-shell.hooks.ts';
+
+// Split out: it brings the prayer-times library, which only readers with a place need.
+const PrayerReminder = lazy(() =>
+  import('#/features/prayer/prayer-reminder.tsx').then((m) => ({ default: m.PrayerReminder })),
+);
 
 /**
  * Full-bleed pages with a floating dock instead of side rails: the reading
@@ -13,6 +19,7 @@ import { useApplyPrefs, useGlobalShortcuts, usePrefetchAllSurahs, useServiceWork
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const t = useT();
+  const prayer = prayerStore.use();
 
   useApplyPrefs();
   useGlobalShortcuts();
@@ -34,6 +41,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="relative flex min-w-0 grow">{children}</div>
       <DockSheet />
       <PwaUpdatePrompt />
+      {prayer.place && prayer.reminders && (
+        <Suspense fallback={null}>
+          <PrayerReminder />
+        </Suspense>
+      )}
       <Dock />
     </div>
   );

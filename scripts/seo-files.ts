@@ -5,6 +5,10 @@
  * Personal tools (prayer times, qibla, memorize) and settings are noindex
  * and left out (see `pageHead` in `src/lib/seo.ts`).
  *
+ * Every URL carries a `<lastmod>`: the time this script ran, or the value of
+ * `VITE_LAST_MODIFIED` when set. Use the same variable at build time so the
+ * sitemap agrees with the `dateModified` and `og:updated_time` the pages emit.
+ *
  * Usage: `bun seo:generate`. Rerun after `bun duas:fetch` or `bun hadith:fetch`
  * (new categories or books), or if `SITE_URL` changes.
  */
@@ -20,6 +24,8 @@ import { SITE_URL } from '#/lib/seo.ts';
 const PUBLIC_DIR = join(import.meta.dirname, '../public');
 const duaIndex = duaIndexJson as DuaIndex;
 const hadithIndex = hadithIndexJson as HadithIndex;
+
+const LAST_MODIFIED: string = process.env.VITE_LAST_MODIFIED ?? new Date().toISOString();
 
 const paths = [
   '/',
@@ -37,7 +43,7 @@ const paths = [
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${paths.map((path) => `  <url><loc>${SITE_URL}${path}</loc></url>`).join('\n')}
+${paths.map((path) => `  <url><loc>${SITE_URL}${path}</loc><lastmod>${LAST_MODIFIED}</lastmod></url>`).join('\n')}
 </urlset>
 `;
 
@@ -52,4 +58,4 @@ Sitemap: ${SITE_URL}/sitemap.xml
 
 await writeFile(join(PUBLIC_DIR, 'sitemap.xml'), sitemap);
 await writeFile(join(PUBLIC_DIR, 'robots.txt'), robots);
-console.log(`Wrote sitemap.xml (${paths.length} URLs) and robots.txt`);
+console.log(`Wrote sitemap.xml (${paths.length} URLs, lastmod ${LAST_MODIFIED}) and robots.txt`);

@@ -36,6 +36,13 @@ const OG_IMAGE = {
   alt: 'Noorish: read the Quran, word by word',
 };
 
+/**
+ * Last-modified timestamp for crawlers. Evaluated once when the server
+ * module loads, so it changes per deploy rather than per request. Set
+ * `VITE_LAST_MODIFIED` at build time (e.g. to the commit date) to pin it.
+ */
+const LAST_MODIFIED: string = import.meta.env.VITE_LAST_MODIFIED ?? new Date().toISOString();
+
 type Head = {
   meta: Array<Record<string, string>>;
   links: Array<Record<string, string>>;
@@ -72,6 +79,7 @@ function page({
       { property: 'og:image:width', content: OG_IMAGE.width },
       { property: 'og:image:height', content: OG_IMAGE.height },
       { property: 'og:image:alt', content: OG_IMAGE.alt },
+      { property: 'og:updated_time', content: LAST_MODIFIED },
       { name: 'twitter:card', content: 'summary_large_image' },
     ],
     links: [{ rel: 'canonical', href: url }],
@@ -98,6 +106,7 @@ function homeHead(): Head {
             name: SITE_NAME,
             description: HOME_DESCRIPTION,
             inLanguage: ['en', 'id'],
+            dateModified: LAST_MODIFIED,
           },
           {
             '@type': 'WebApplication',
@@ -110,6 +119,7 @@ function homeHead(): Head {
             browserRequirements: 'Requires JavaScript',
             image: `${SITE_URL}/apple-touch-icon.png`,
             offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+            dateModified: LAST_MODIFIED,
           },
         ],
       }),
@@ -139,6 +149,7 @@ function surahHead(chapter: Chapter): Head {
             description,
             inLanguage: 'ar',
             isPartOf: { '@type': 'Book', name: 'The Quran', inLanguage: 'ar' },
+            dateModified: LAST_MODIFIED,
           },
           {
             '@type': 'BreadcrumbList',

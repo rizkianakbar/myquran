@@ -117,7 +117,7 @@ Ideas for where Noorish goes next. The rule for every one of them: **the reader 
 - [ ] **Prayer times and qibla:** location opt-in, calculation method in Settings. (`vercel.json` currently sends `Permissions-Policy: geolocation=()`, which must be relaxed to `geolocation=(self)` first.)
 - [x] **Verse of the day** on the home page, linking into the reader.
 - [ ] **Morning and evening adhkar** with a simple tasbih counter.
-- [ ] **Reading plans and khatam tracker,** building on the journal's existing progress.
+- [x] **Reading plans and khatam tracker,** building on the journal's existing progress.
 - [ ] **Memorization (hifz) mode:** hide and reveal verses, and repeat an audio range a set number of times.
 
 ### Later

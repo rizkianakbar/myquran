@@ -2,6 +2,7 @@ import { useRouterState } from '@tanstack/react-router';
 import { type ReactNode, useEffect } from 'react';
 import { Dock } from '#/features/dock/dock.tsx';
 import { DockSheet } from '#/features/dock/dock-sheet.tsx';
+import { usePlanSync } from '#/features/plans/plans.hooks.ts';
 import { useT } from '#/lib/i18n.ts';
 import { closeDock } from '#/lib/prefs.ts';
 import { useApplyPrefs, useGlobalShortcuts, usePrefetchAllSurahs } from './app-shell.hooks.ts';
@@ -17,6 +18,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   useApplyPrefs();
   useGlobalShortcuts();
   usePrefetchAllSurahs();
+  usePlanSync();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: close the sheet whenever the location changes, hash jumps included
   useEffect(() => closeDock(), [href]);

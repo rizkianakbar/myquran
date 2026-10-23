@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { pgTable, uniqueIndex } from 'drizzle-orm/pg-core';
+import type { PlanDay } from '#/server/schemas.ts';
 
 /**
  * Users table for authentication.
@@ -108,4 +109,32 @@ export const bookmarks = pgTable(
     createdAt: t.timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
   }),
   (t) => [uniqueIndex('quran_bookmarks_user_verse_idx').on(t.userId, t.surah, t.verse)],
+);
+
+/**
+ * A reader's khatam plan, synced from their devices. One per user: starting
+ * a new plan replaces the old one. `planId` is made on the device that
+ * started the plan, so two devices can tell whether they hold the same one.
+ */
+export const readingPlans = pgTable(
+  'quran_reading_plans',
+  (t) => ({
+    id: t.text('id').primaryKey().default(sql`uuidv7()`),
+    userId: t
+      .text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    planId: t.uuid('plan_id').notNull(),
+    startDate: t.date('start_date', { mode: 'string' }).notNull(),
+    endDate: t.date('end_date', { mode: 'string' }).notNull(),
+    /**
+     * Verses read, as the base64 bitset from `src/lib/quran/verse-set.ts`.
+     */
+    read: t.text('read').notNull(),
+    today: t.jsonb('today').$type<PlanDay>(),
+    completedAt: t.timestamp('completed_at', { withTimezone: true, mode: 'string' }),
+    createdAt: t.timestamp('created_at', { withTimezone: true, mode: 'string' }).notNull(),
+    updatedAt: t.timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+  }),
+  (t) => [uniqueIndex('quran_reading_plans_user_idx').on(t.userId)],
 );

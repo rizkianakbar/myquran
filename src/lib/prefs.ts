@@ -47,6 +47,10 @@ export interface Prefs {
    * Recitation speed; pitch is preserved.
    */
   playbackRate: number;
+  /**
+   * Show the reading plan's "Today's reading" card on the home page.
+   */
+  planOnHome: boolean;
 }
 
 const prefersDark = typeof matchMedia !== 'undefined' && matchMedia('(prefers-color-scheme: dark)').matches;
@@ -64,6 +68,7 @@ export const prefsStore = createStore<Prefs>(
     focusMode: false,
     reciter: 7,
     playbackRate: 1,
+    planOnHome: true,
   },
   { key: 'quran:prefs' },
 );

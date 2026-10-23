@@ -1,0 +1,301 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "b8af39ce-f4c2-4885-ab18-e91446c2e9e9",
+  "prevIds": [
+    "47e213f9-893c-4331-bcbb-686325dabed8"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "quran_reading_plans"
+      ],
+      "writes": [
+        "s|tbl|public.quran_reading_plans",
+        "n|tbl|public.quran_reading_plans",
+        "e|tbl|public.quran_reading_plans",
+        "n|rel|public.quran_reading_plans",
+        "n|type|public.quran_reading_plans",
+        "n|rel|public.quran_reading_plans_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "quran_reading_plans",
+        "quran_reading_plans_user_idx"
+      ],
+      "writes": [
+        "s|idx|public.quran_reading_plans_user_idx",
+        "n|idx|public.quran_reading_plans_user_idx",
+        "e|idx|public.quran_reading_plans_user_idx",
+        "n|rel|public.quran_reading_plans_user_idx"
+      ],
+      "reads": [
+        "n|tbl|public.quran_reading_plans",
+        "n|sch|public",
+        "n|col|public.quran_reading_plans.user_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "quran_reading_plans"
+      ],
+      "writes": [
+        "s|fk|public.quran_reading_plans.quran_reading_plans_user_id_auth_users_id_fkey",
+        "n|fk|public.quran_reading_plans.quran_reading_plans_user_id_auth_users_id_fkey",
+        "e|fk|public.quran_reading_plans.quran_reading_plans_user_id_auth_users_id_fkey",
+        "n|con|public.quran_reading_plans.quran_reading_plans_user_id_auth_users_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.quran_reading_plans",
+        "n|sch|public",
+        "n|tbl|public.auth_users",
+        "n|sch|public",
+        "n|col|public.quran_reading_plans.user_id",
+        "n|col|public.auth_users.id",
+        "e|uniqueness|public.auth_users.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "quran_reading_plans",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quran_reading_plans",
+        "name": "id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "uuidv7()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quran_reading_plans",
+        "name": "user_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quran_reading_plans",
+        "name": "plan_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quran_reading_plans",
+        "name": "start_date",
+        "type": "date",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quran_reading_plans",
+        "name": "end_date",
+        "type": "date",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quran_reading_plans",
+        "name": "read",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quran_reading_plans",
+        "name": "today",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quran_reading_plans",
+        "name": "completed_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quran_reading_plans",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quran_reading_plans",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quran_reading_plans",
+        "name": "quran_reading_plans_user_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quran_reading_plans",
+        "name": "quran_reading_plans_user_id_auth_users_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "auth_users",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quran_reading_plans",
+        "name": "quran_reading_plans_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { useMemo } from 'react';
+import { PlanPanel } from '#/features/plans/plans-panel.tsx';
 import { useT } from '#/lib/i18n.ts';
 import { usePrefs } from '#/lib/prefs.ts';
 import { computeStreak, dateKey, lastNDays, useProgress } from '#/lib/progress.ts';
@@ -112,19 +113,24 @@ export function InProgressList() {
 }
 
 /**
- * Progress column of the journal; the journal supplies the heading and scroll area.
+ * Progress column of the journal (reading plan, then stats); the journal
+ * supplies the heading and scroll area.
  */
 export function JournalProgress() {
   const t = useT();
   const { activity } = useProgress();
 
-  if (Object.keys(activity).length === 0) {
-    return <p className="text-sm text-muted-foreground">{t.progressEmpty}</p>;
-  }
   return (
     <>
-      <ProgressStats />
-      <InProgressList />
+      <PlanPanel />
+      {Object.keys(activity).length === 0 ? (
+        <p className="text-sm text-muted-foreground">{t.progressEmpty}</p>
+      ) : (
+        <>
+          <ProgressStats />
+          <InProgressList />
+        </>
+      )}
     </>
   );
 }

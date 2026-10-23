@@ -173,6 +173,18 @@ export function SettingsPage() {
             </div>
           </SettingsRow>
 
+          <SettingsRow label={t.planOnHome} hint={t.planOnHomeHint}>
+            <SettingsSegmented<'on' | 'off'>
+              label={t.planOnHome}
+              value={prefs.planOnHome ? 'on' : 'off'}
+              onChange={(v) => setPref('planOnHome', v === 'on')}
+              options={[
+                { value: 'on', label: t.on },
+                { value: 'off', label: t.translationOff },
+              ]}
+            />
+          </SettingsRow>
+
           <section className="py-6">
             <h2 className="font-serif text-lg">{t.shortcuts}</h2>
             <p className="mb-4 text-sm text-muted-foreground">{t.shortcutHelp}</p>

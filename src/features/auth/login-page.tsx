@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { requestPlanSync } from '#/features/plans/plans.hooks.ts';
 import { authClient } from '#/lib/auth-client.ts';
 
 export function LoginPage() {
@@ -24,6 +25,7 @@ export function LoginPage() {
       if (result.error) {
         setError(result.error.message || 'Login failed');
       } else {
+        requestPlanSync();
         navigate({ to: '/' });
       }
     } catch {

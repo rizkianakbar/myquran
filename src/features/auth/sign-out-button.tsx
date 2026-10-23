@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { LogOut } from 'lucide-react';
 import { Button } from '#/components/ui/button.tsx';
+import { stopPlanSync } from '#/features/plans/plans.sync.ts';
 import { authClient } from '#/lib/auth-client.ts';
 import { useT } from '#/lib/i18n.ts';
 import { bookmarksQueries } from '#/server/bookmarks.functions.ts';
@@ -13,6 +14,7 @@ export function SignOutButton() {
   if (!session) return null;
   const signOut = async () => {
     await authClient.signOut();
+    stopPlanSync();
     // Drop the previous user's private data from the cache.
     queryClient.removeQueries({ queryKey: notesQueries.all });
     queryClient.removeQueries({ queryKey: bookmarksQueries.all });

@@ -16,6 +16,9 @@ const EQURAN_API = 'https://equran.id/api/v2';
 const OUT_DIR = join(import.meta.dirname, '../public/quran');
 // Bundled into the app (page titles need it on the server), so not under public/.
 const CHAPTERS_PATH = join(import.meta.dirname, '../src/lib/quran/chapters.json');
+// Bundled too: reading plans count in mushaf pages before any surah file loads.
+const PAGES_PATH = join(import.meta.dirname, '../src/lib/quran/pages.json');
+const TOTAL_PAGES = 604;
 const FORCE = process.argv.includes('--force');
 const TOTAL_VERSES = 6236;
 /**
@@ -217,6 +220,22 @@ async function fetchIfMissing(path: string, fetcher: () => Promise<unknown>, isC
  * Surah files written by an older version of this script lack newer fields
  * (e.g. transliteration) and are refetched; tafsir files are left alone.
  */
+/**
+ * Where each mushaf page begins, as [surah, verse], from the `page` field of
+ * the surah files.
+ */
+function pageStarts(chapters: Chapter[]): [number, number][] {
+  const starts: [number, number][] = [];
+  for (const chapter of chapters) {
+    const { verses } = JSON.parse(readFileSync(join(OUT_DIR, `${chapter.number}.json`), 'utf8')) as SurahData;
+    for (const verse of verses) {
+      if (verse.page > starts.length) starts.push([chapter.number, verse.n]);
+    }
+  }
+  if (starts.length !== TOTAL_PAGES) throw new Error(`Expected ${TOTAL_PAGES} pages, got ${starts.length}`);
+  return starts;
+}
+
 function isCurrentSurahFile(path: string): boolean {
   try {
     return JSON.parse(readFileSync(path, 'utf8')).version === SURAH_DATA_VERSION;
@@ -266,6 +285,7 @@ async function main() {
   }
 
   if (verseTotal !== TOTAL_VERSES) throw new Error(`Expected ${TOTAL_VERSES} verses, got ${verseTotal}`);
+  await writeJson(PAGES_PATH, pageStarts(chapters));
   console.log(`\nDone — ${verseTotal} verses written to ${OUT_DIR}`);
 }
 

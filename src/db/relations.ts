@@ -19,6 +19,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.users.id,
       to: r.bookmarks.userId,
     }),
+    readingPlan: r.one.readingPlans({
+      from: r.users.id,
+      to: r.readingPlans.userId,
+    }),
   },
   sessions: {
     user: r.one.users({
@@ -41,6 +45,12 @@ export const relations = defineRelations(schema, (r) => ({
   bookmarks: {
     user: r.one.users({
       from: r.bookmarks.userId,
+      to: r.users.id,
+    }),
+  },
+  readingPlans: {
+    user: r.one.users({
+      from: r.readingPlans.userId,
       to: r.users.id,
     }),
   },

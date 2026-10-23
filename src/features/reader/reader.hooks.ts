@@ -4,6 +4,7 @@ import { useServerFn } from '@tanstack/react-start';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePlayer } from '#/features/audio/audio.hooks.ts';
 import { play, togglePause, warm } from '#/features/audio/audio.lib.ts';
+import { markPlanRead } from '#/features/plans/plans.store.ts';
 import { atPageEnd } from '#/lib/page-scroll.ts';
 import { setPref, usePrefs } from '#/lib/prefs.ts';
 import { progressStore, recordRead, setLastRead } from '#/lib/progress.ts';
@@ -37,6 +38,7 @@ export function useReadingTracker(
           if (entry.isIntersecting) {
             visible.add(n);
             recordRead(surah, n);
+            markPlanRead(surah, n);
           } else visible.delete(n);
         }
         if (visible.size) setLastRead(surah, Math.min(...visible));
@@ -52,7 +54,9 @@ export function useReadingTracker(
       if (!atPageEnd()) return;
       const bottom = window.innerHeight;
       for (const el of root.querySelectorAll<HTMLElement>('[data-verse]')) {
-        if (el.getBoundingClientRect().top < bottom) recordRead(surah, Number(el.dataset.verse));
+        if (el.getBoundingClientRect().top >= bottom) continue;
+        recordRead(surah, Number(el.dataset.verse));
+        markPlanRead(surah, Number(el.dataset.verse));
       }
     };
     window.addEventListener('scroll', onScroll, { passive: true });

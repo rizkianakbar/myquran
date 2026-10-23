@@ -76,8 +76,9 @@ export function ReaderPage({ surah }: { surah: number }) {
               onToggleBookmark={annotations.toggleBookmark}
             />
           )}
+          {/* The end matter waits for the verses, or it flashes under the header while they load. */}
           {chapter && surahData && <SurahEnd surah={surah} name={chapter.nameSimple} />}
-          <ReaderSurahNav prev={prev} next={next} />
+          {surahData && <ReaderSurahNav prev={prev} next={next} />}
         </div>
       </main>
 

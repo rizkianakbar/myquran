@@ -14,17 +14,19 @@ export function HomeFrontispiece() {
 
   return (
     <section className="dark relative overflow-hidden rounded-[2rem] bg-(--ornament-field) text-foreground ring-1 ring-gold/30">
-      <div className="grid items-center gap-8 p-8 sm:p-12 md:grid-cols-[1fr_minmax(0,22rem)] md:gap-4">
+      <div className="grid items-center gap-8 p-6 sm:p-12 md:grid-cols-[1fr_minmax(0,22rem)] md:gap-4">
         <div className="relative z-10 max-w-md">
-          <p dir="rtl" lang="ar" className="text-left font-kufi text-5xl text-gold-ink sm:text-6xl">
+          <p dir="rtl" lang="ar" className="text-left font-kufi text-4xl text-gold-ink sm:text-6xl">
             نُورِيش
           </p>
-          <h1 className="mt-5 font-serif text-3xl leading-tight font-medium sm:text-4xl">{t.homeTagline}</h1>
-          <p className="mt-4 font-serif text-base leading-relaxed text-muted-foreground">{t.homeIntro}</p>
+          <h1 className="mt-3 font-serif text-2xl leading-tight font-medium sm:mt-5 sm:text-4xl">{t.homeTagline}</h1>
+          <p className="mt-3 font-serif text-sm leading-relaxed text-muted-foreground sm:mt-4 sm:text-base">
+            {t.homeIntro}
+          </p>
 
           {isError && <p className="mt-6 text-sm text-destructive">{t.dataMissing}</p>}
 
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          <div className="mt-6 flex flex-wrap items-center gap-3 sm:mt-8">
             {resume && lastRead ? (
               <Link
                 to="/surah/$surah"
@@ -49,7 +51,17 @@ export function HomeFrontispiece() {
           </div>
         </div>
 
-        <svg viewBox="0 0 400 400" aria-hidden="true" className="headpiece mx-auto w-full max-w-88 md:-my-6">
+        {/* Phones: the rosette tucks into the corner behind the title instead of stacking a screen-wide one below. */}
+        <svg
+          viewBox="0 0 400 400"
+          aria-hidden="true"
+          className="headpiece pointer-events-none absolute -top-10 -right-10 size-44 opacity-60 md:hidden">
+          <Rosette cx={200} cy={200} r={188} spec={HERO_ROSETTE} delay={150} />
+        </svg>
+        <svg
+          viewBox="0 0 400 400"
+          aria-hidden="true"
+          className="headpiece mx-auto hidden w-full max-w-88 md:-my-6 md:block">
           <Rosette cx={200} cy={200} r={188} spec={HERO_ROSETTE} delay={150} />
           <Rosette cx={200} cy={200} r={74} spec={{ folds: 8, step: 3, rotation: Math.PI / 8, rings: 2 }} delay={600} />
         </svg>

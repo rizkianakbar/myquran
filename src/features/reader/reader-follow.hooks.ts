@@ -35,14 +35,12 @@ export function useFollowRecitation(main: React.RefObject<HTMLElement | null>, s
 
   const position = useCallback((): 'above' | 'in' | 'below' | null => {
     const el = recitedVerse();
-    const root = main.current;
-    if (!el || !root) return null;
-    const box = root.getBoundingClientRect();
+    if (!el) return null;
     const rect = el.getBoundingClientRect();
-    if (rect.bottom < box.top + VIEW_INSET.top) return 'above';
-    if (rect.top > box.bottom - VIEW_INSET.bottom) return 'below';
+    if (rect.bottom < VIEW_INSET.top) return 'above';
+    if (rect.top > window.innerHeight - VIEW_INSET.bottom) return 'below';
     return 'in';
-  }, [main, recitedVerse]);
+  }, [recitedVerse]);
 
   /**
    * Centre the recited verse in the readable band between the running head
@@ -52,18 +50,16 @@ export function useFollowRecitation(main: React.RefObject<HTMLElement | null>, s
    */
   const centerVerse = useCallback(() => {
     const el = recitedVerse();
-    const root = main.current;
-    if (!el || !root) return;
-    const box = root.getBoundingClientRect();
+    if (!el) return;
     const rect = el.getBoundingClientRect();
-    const bandTop = box.top + VIEW_INSET.top;
-    const bandBottom = box.bottom - VIEW_INSET.bottom;
+    const bandTop = VIEW_INSET.top;
+    const bandBottom = window.innerHeight - VIEW_INSET.bottom;
     const delta =
       rect.height > bandBottom - bandTop - 32
         ? rect.top - (bandTop + 16)
         : rect.top + rect.height / 2 - (bandTop + bandBottom) / 2;
-    if (Math.abs(delta) > CENTER_TOLERANCE) root.scrollBy({ top: delta, behavior: 'smooth' });
-  }, [main, recitedVerse]);
+    if (Math.abs(delta) > CENTER_TOLERANCE) window.scrollBy({ top: delta, behavior: 'smooth' });
+  }, [recitedVerse]);
 
   /**
    * Show the chip while detached and the verse is off screen. Seeing the
@@ -112,20 +108,20 @@ export function useFollowRecitation(main: React.RefObject<HTMLElement | null>, s
       if (prev.resumeAt === null || resumeAt - prev.resumeAt > 150) followStore.set({ ...prev, resumeAt });
     };
     const onKey = (event: KeyboardEvent) => SCROLL_KEYS.has(event.key) && detach();
-    // A press on the reader itself (not its content) is the scrollbar.
-    const onPointerDown = (event: PointerEvent) => event.target === root && detach();
+    // A press on the document itself (not its content) is the scrollbar.
+    const onPointerDown = (event: PointerEvent) => event.target === document.documentElement && detach();
     root.addEventListener('wheel', detach, { passive: true });
     root.addEventListener('touchmove', detach, { passive: true });
-    root.addEventListener('keydown', onKey);
-    root.addEventListener('pointerdown', onPointerDown);
-    // Cheap: two rect reads, and the store only updates when the answer changes.
-    root.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('pointerdown', onPointerDown);
+    // Cheap: one rect read, and the store only updates when the answer changes.
+    window.addEventListener('scroll', sync, { passive: true });
     return () => {
       root.removeEventListener('wheel', detach);
       root.removeEventListener('touchmove', detach);
-      root.removeEventListener('keydown', onKey);
-      root.removeEventListener('pointerdown', onPointerDown);
-      root.removeEventListener('scroll', sync);
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('scroll', sync);
     };
   }, [main, sync]);
 

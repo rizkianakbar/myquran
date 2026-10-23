@@ -2,6 +2,7 @@ import { useLocation } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { useIsPhone } from '#/hooks/use-media-query.ts';
 import { chromeHiddenStore } from '#/lib/chrome.ts';
+import { atPageEnd, pageScroller } from '#/lib/page-scroll.ts';
 import type { SurahData } from '#/lib/quran/types.ts';
 import { holdInPlace, savedPositions, topVerse } from './reader-scroll.lib.ts';
 
@@ -25,13 +26,14 @@ export function useScrollPosition(main: React.RefObject<HTMLElement | null>, sur
     const saved = savedPositions.get(key);
     const target = document.getElementById(saved?.id ?? hash);
     let release: (() => void) | undefined;
+    const page = pageScroller();
     if (saved && target) {
-      root.scrollTop += target.getBoundingClientRect().top - saved.top;
+      page.scrollTop += target.getBoundingClientRect().top - saved.top;
       release = holdInPlace(root, saved.id, saved.top);
     } else if (hash && target) {
       target.scrollIntoView({ block: 'start' });
       release = holdInPlace(root, hash, target.getBoundingClientRect().top);
-    } else root.scrollTop = 0;
+    } else page.scrollTop = 0;
 
     let timer: ReturnType<typeof setTimeout> | undefined;
     const save = () => {
@@ -42,11 +44,11 @@ export function useScrollPosition(main: React.RefObject<HTMLElement | null>, sur
         if (position) savedPositions.set(key, position);
       }, SAVE_DELAY_MS);
     };
-    root.addEventListener('scroll', save, { passive: true });
+    window.addEventListener('scroll', save, { passive: true });
     return () => {
       release?.();
       clearTimeout(timer);
-      root.removeEventListener('scroll', save);
+      window.removeEventListener('scroll', save);
     };
   }, [main, surahData, key, hash]);
 }
@@ -78,9 +80,9 @@ export function useHideChromeOnScroll(main: React.RefObject<HTMLElement | null>)
   const isPhone = useIsPhone();
 
   useEffect(() => {
-    const root = main.current;
-    if (!root || !isPhone) return;
-    let last = root.scrollTop;
+    if (!main.current || !isPhone) return;
+    const page = pageScroller();
+    let last = page.scrollTop;
     let down = 0;
     let userUntil = 0;
 
@@ -88,10 +90,10 @@ export function useHideChromeOnScroll(main: React.RefObject<HTMLElement | null>)
       userUntil = performance.now() + USER_SCROLL_MS;
     };
     const onScroll = () => {
-      const top = root.scrollTop;
+      const top = page.scrollTop;
       const delta = top - last;
       last = top;
-      const atEdge = top < TOP_ZONE_PX || top + root.clientHeight >= root.scrollHeight - 4;
+      const atEdge = top < TOP_ZONE_PX || atPageEnd();
       if (atEdge) {
         down = 0;
         return chromeHiddenStore.set(false);
@@ -106,11 +108,11 @@ export function useHideChromeOnScroll(main: React.RefObject<HTMLElement | null>)
       }
     };
 
-    root.addEventListener('scroll', onScroll, { passive: true });
-    for (const type of USER_INPUTS) root.addEventListener(type, markUser, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    for (const type of USER_INPUTS) window.addEventListener(type, markUser, { passive: true });
     return () => {
-      root.removeEventListener('scroll', onScroll);
-      for (const type of USER_INPUTS) root.removeEventListener(type, markUser);
+      window.removeEventListener('scroll', onScroll);
+      for (const type of USER_INPUTS) window.removeEventListener(type, markUser);
       chromeHiddenStore.set(false);
     };
   }, [main, isPhone]);

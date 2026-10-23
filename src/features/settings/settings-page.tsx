@@ -28,7 +28,7 @@ export function SettingsPage() {
   const goBack = useGoBack();
 
   return (
-    <main id="main-content" className="min-w-0 grow overflow-y-auto">
+    <main id="main-content" className="min-w-0 grow">
       <title>{`${t.settings} · ${t.appName}`}</title>
       <div className="mx-auto max-w-2xl px-4 pt-10 pb-40 sm:px-6">
         <button

@@ -34,9 +34,6 @@ export function useNearVerses(list: React.RefObject<HTMLElement | null>, active:
   useEffect(() => {
     const container = list.current;
     if (!container || !active) return;
-    // rootMargin only grows the root's own box, so lookahead inside the
-    // scrolling <main> needs that <main> as the root.
-    const root = container.closest<HTMLElement>('#main-content');
     const pending = new Map<number, boolean>();
     let scrolling = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -62,15 +59,15 @@ export function useNearVerses(list: React.RefObject<HTMLElement | null>, active:
         }
         if (!scrolling) flush();
       },
-      { root, rootMargin: LOOKAHEAD },
+      { rootMargin: LOOKAHEAD },
     );
 
     for (const card of container.querySelectorAll('article[data-verse]')) observer.observe(card);
-    root?.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       observer.disconnect();
       clearTimeout(timer);
-      root?.removeEventListener('scroll', onScroll);
+      window.removeEventListener('scroll', onScroll);
     };
   }, [list, active]);
 

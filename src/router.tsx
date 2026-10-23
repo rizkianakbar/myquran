@@ -23,9 +23,6 @@ export function getRouter() {
     defaultPreloadStaleTime: 0,
     // The surah reader restores by verse itself (see `useScrollPosition`).
     scrollRestoration: ({ location }) => !location.pathname.startsWith('/surah/'),
-    // Pages scroll inside <main>, not the window. Without this the router
-    // carries its offset over to the next page instead of starting at the top.
-    scrollToTopSelectors: ['#main-content'],
   });
 
   setupRouterSsrQueryIntegration({ router, queryClient });

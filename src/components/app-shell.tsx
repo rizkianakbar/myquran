@@ -22,7 +22,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => closeDock(), [href]);
 
   return (
-    <div className="flex h-dvh overflow-hidden">
+    // The document scrolls, not an inner box (see `src/lib/page-scroll.ts`).
+    <div className="flex min-h-dvh">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-60 focus:rounded-full focus:bg-popover focus:px-4 focus:py-2 focus:text-sm focus:ring-1 focus:ring-gold">

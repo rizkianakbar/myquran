@@ -50,12 +50,7 @@ export function ReaderPage({ surah }: { surah: number }) {
 
   return (
     <>
-      <main
-        ref={mainRef}
-        id="main-content"
-        tabIndex={-1}
-        {...handlers}
-        className="min-w-0 grow overflow-y-auto outline-none">
+      <main ref={mainRef} id="main-content" tabIndex={-1} {...handlers} className="min-w-0 grow outline-none">
         {chapter && <RunningHead chapter={chapter} headerRef={headerRef} rootRef={mainRef} controls={controls} />}
         {/* Laid out but transparent until the fonts land, so their swap reflows nothing anyone sees. */}
         <div

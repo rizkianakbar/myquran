@@ -4,6 +4,7 @@ import { useServerFn } from '@tanstack/react-start';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePlayer } from '#/features/audio/audio.hooks.ts';
 import { play, togglePause, warm } from '#/features/audio/audio.lib.ts';
+import { atPageEnd } from '#/lib/page-scroll.ts';
 import { type ArabicFont, setPref, usePrefs } from '#/lib/prefs.ts';
 import { progressStore, recordRead, setLastRead } from '#/lib/progress.ts';
 import { getSurah } from '#/lib/quran/data.ts';
@@ -59,23 +60,23 @@ export function useReadingTracker(
         if (visible.size) setLastRead(surah, Math.min(...visible));
       },
       // The top 56px sits under the running head, so verses there aren't being read.
-      { root, rootMargin: '-56px 0px -40% 0px' },
+      { rootMargin: '-56px 0px -40% 0px' },
     );
     for (const el of root.querySelectorAll('[data-verse]')) observer.observe(el);
 
     // The last verses never reach the observed band (they can't scroll that
     // high), so at the bottom count everything still on screen as read.
     const onScroll = () => {
-      if (root.scrollTop + root.clientHeight < root.scrollHeight - 4) return;
-      const bottom = root.getBoundingClientRect().bottom;
+      if (!atPageEnd()) return;
+      const bottom = window.innerHeight;
       for (const el of root.querySelectorAll<HTMLElement>('[data-verse]')) {
         if (el.getBoundingClientRect().top < bottom) recordRead(surah, Number(el.dataset.verse));
       }
     };
-    root.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       observer.disconnect();
-      root.removeEventListener('scroll', onScroll);
+      window.removeEventListener('scroll', onScroll);
     };
   }, [main, surahData, focusMode]);
 }

@@ -34,7 +34,7 @@ export function LoginPage() {
   };
 
   return (
-    <main id="main-content" className="flex min-w-0 grow items-center justify-center overflow-y-auto p-4">
+    <main id="main-content" className="flex min-w-0 grow items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8 rounded-xl border bg-card p-8 text-card-foreground">
         <div>
           <h2 className="text-center text-3xl font-bold tracking-tight">Noorish</h2>

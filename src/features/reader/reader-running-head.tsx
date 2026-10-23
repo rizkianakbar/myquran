@@ -4,6 +4,7 @@ import { VerseMarker } from '#/components/ornament/headpiece.tsx';
 import { Lattice } from '#/components/ornament/lattice.tsx';
 import { Rosette } from '#/components/ornament/rosette.tsx';
 import { chromeHiddenStore } from '#/lib/chrome.ts';
+import { pageScroller } from '#/lib/page-scroll.ts';
 import { useProgress } from '#/lib/progress.ts';
 import { toArabicNumber } from '#/lib/quran/data.ts';
 import type { Chapter } from '#/lib/quran/types.ts';
@@ -22,18 +23,19 @@ function useScrollProgress(rootRef: React.RefObject<HTMLElement | null>, barRef:
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
+    const page = pageScroller();
     const measure = () => {
-      const range = root.scrollHeight - root.clientHeight;
-      const fraction = range > 0 ? Math.min(1, root.scrollTop / range) : 1;
+      const range = page.scrollHeight - window.innerHeight;
+      const fraction = range > 0 ? Math.min(1, page.scrollTop / range) : 1;
       if (barRef.current) barRef.current.style.width = `${fraction * 100}%`;
       setAtEnd(fraction > 0.995);
     };
     measure();
-    root.addEventListener('scroll', measure, { passive: true });
+    window.addEventListener('scroll', measure, { passive: true });
     const resize = new ResizeObserver(measure);
     resize.observe(root);
     return () => {
-      root.removeEventListener('scroll', measure);
+      window.removeEventListener('scroll', measure);
       resize.disconnect();
     };
   }, [rootRef, barRef]);
@@ -72,12 +74,11 @@ export function RunningHead({
     const header = headerRef.current;
     if (!header) return;
     const observer = new IntersectionObserver(([entry]) => setPastHeader(!entry.isIntersecting), {
-      root: rootRef.current,
       rootMargin: '-56px 0px 0px 0px',
     });
     observer.observe(header);
     return () => observer.disconnect();
-  }, [headerRef, rootRef]);
+  }, [headerRef]);
 
   return (
     <div className="sticky top-0 z-20 h-0">

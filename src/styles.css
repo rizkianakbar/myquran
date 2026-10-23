@@ -39,11 +39,11 @@
    * Page-level scrolling shows no bar at all: the reader has the running
    * head's progress rule, and pages read cleaner edge to edge.
    */
-  main {
+  html {
     scrollbar-width: none;
   }
 
-  main::-webkit-scrollbar {
+  html::-webkit-scrollbar {
     display: none;
   }
 }
